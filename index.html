@@ -630,7 +630,10 @@
 
             <!-- ADMIN VIEW -->
             <div id="view-admin" class="view-section hidden overflow-y-auto p-6">
-                <h2 style="font-size:1.25rem; margin-bottom:1rem; font-weight:700;">👑 Admin Control Panel</h2>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+    <h2 style="font-size:1.25rem; font-weight:700;">👑 Admin Control Panel</h2>
+    <button onclick="switchTab('pos')" class="category-pill" style="background:var(--primary); color:white;">← Back to POS</button>
+</div>
                 
                 <div class="admin-grid">
                     <div class="admin-card" onclick="openItemModal()">➕ Add New Item</div>
@@ -1156,45 +1159,45 @@
             document.getElementById('item-modal').classList.add('open');
         }
 
-        function saveItem() {
-            const id = document.getElementById('edit-item-id').value;
-            const name = document.getElementById('item-name').value;
-            const category = document.getElementById('item-category').value;
-            const price = parseInt(document.getElementById('item-price').value);
-            const emoji = document.getElementById('item-emoji').value || '🧋';
-            const favorite = document.getElementById('item-favorite').checked;
-            
-            if (!name || !price) { showToast("Please fill all fields"); return; }
-            
-            if (id) {
-                // Edit existing
-                const index = menuItems.findIndex(i => i.id == id);
-                if (index !== -1) {
-                    menuItems[index] = { ...menuItems[index], name, category, price, emoji, favorite };
-                }
-                showToast(`Updated ${name}`);
-            } else {
-                // Add new
-                menuItems.push({ id: nextId++, name, category, price, emoji, favorite });
-                showToast(`Added ${name}`);
-            }
-            saveToLocalStorage();
-            renderMenu();
-            renderAdminItemsTable();
-            closeItemModal();
+function saveItem() {
+    const id = document.getElementById('edit-item-id').value;
+    const name = document.getElementById('item-name').value;
+    const category = document.getElementById('item-category').value;
+    const price = parseInt(document.getElementById('item-price').value);
+    const emoji = document.getElementById('item-emoji').value || '🧋';
+    const favorite = document.getElementById('item-favorite').checked;
+    
+    if (!name || !price) { showToast("Please fill all fields"); return; }
+    
+    if (id) {
+        // Edit existing
+        const index = menuItems.findIndex(i => i.id == id);
+        if (index !== -1) {
+            menuItems[index] = { ...menuItems[index], name, category, price, emoji, favorite };
         }
-
-        function deleteItem(id) {
-            if (!currentUser || currentUser.role !== 'admin') { showToast("Admin access required"); return; }
-            if (confirm('Delete this item?')) {
-                menuItems = menuItems.filter(i => i.id !== id);
-                saveToLocalStorage();
-                renderMenu();
-                renderAdminItemsTable();
-                showToast('Item deleted');
-            }
-        }
-
+        showToast(`Updated ${name}`);
+    } else {
+        // Add new
+        menuItems.push({ id: nextId++, name, category, price, emoji, favorite });
+        showToast(`Added ${name}`);
+    }
+    saveToLocalStorage();
+    renderMenu();
+    renderAdminItemsTable();
+    closeItemModal();
+    switchTab('pos');  // ← ADD THIS LINE
+}
+function deleteItem(id) {
+    if (!currentUser || currentUser.role !== 'admin') { showToast("Admin access required"); return; }
+    if (confirm('Delete this item?')) {
+        menuItems = menuItems.filter(i => i.id !== id);
+        saveToLocalStorage();
+        renderMenu();
+        renderAdminItemsTable();
+        showToast('Item deleted');
+        switchTab('pos');  // ← ADD THIS LINE
+    }
+}
         function closeItemModal() { document.getElementById('item-modal').classList.remove('open'); }
 
         function openCategoryModal() {
@@ -1525,6 +1528,14 @@ function submitLogin() {
             nextId = Math.max(...menuItems.map(i => i.id), 0) + 1;
             showToast('✨ POS Ready | Login with PIN 1234 for Admin control');
         });
+            // ========== KEYBOARD SHORTCUT ==========
+        // Press ESC to go back to POS from any tab
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                switchTab('pos');
+                showToast('⬅️ Returned to POS');
+            }
+              });
     </script>
 </body>
 </html>

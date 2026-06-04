@@ -954,28 +954,138 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // ========== MENU DATA ==========
-        const categories = ['All', '⭐ Favorites', '☕ Coffee', '🍵 Milk Tea', '🍧 Frappe', '🥪 Foods'];
-        let currentCategory = 'All';
+        // ============================================
+// REORGANIZED MENU - 105 ITEMS WITH EMOJIS
+// ============================================
 
-        const menuItems = [
-            { id: 1, name: "Latte", price: 4000, category: "Coffee", favorite: false, emoji: "☕" },
-            { id: 2, name: "Mocha", price: 5000, category: "Coffee", favorite: false, emoji: "🍫" },
-            { id: 3, name: "Matcha Latte", price: 5000, category: "Coffee", favorite: true, emoji: "🍵" },
-            { id: 4, name: "Taro Milk Tea", price: 4500, category: "Milk Tea", favorite: false, emoji: "💜" },
-            { id: 5, name: "Thai Milk Tea", price: 4000, category: "Milk Tea", favorite: true, emoji: "🧡" },
-            { id: 6, name: "Brown Sugar", price: 5000, category: "Milk Tea", favorite: false, emoji: "🍯" },
-            { id: 7, name: "Strawberry Frappe", price: 4500, category: "Frappe", favorite: false, emoji: "🍓" },
-            { id: 8, name: "Matcha Frappe", price: 4500, category: "Frappe", favorite: false, emoji: "🍵" },
-            { id: 9, name: "Chocolate Frappe", price: 4500, category: "Frappe", favorite: false, emoji: "🍫" },
-            { id: 10, name: "Sandwich", price: 3000, category: "Foods", favorite: false, emoji: "🥪" },
-            { id: 11, name: "Croissant", price: 2500, category: "Foods", favorite: false, emoji: "🥐" },
-            { id: 12, name: "Cake Slice", price: 3500, category: "Foods", favorite: false, emoji: "🍰" },
-            { id: 13, name: "Espresso", price: 3500, category: "Coffee", favorite: false, emoji: "☕" },
-            { id: 14, name: "Caramel Macchiato", price: 5500, category: "Coffee", favorite: false, emoji: "🍬" },
-            { id: 15, name: "Jasmine Milk Tea", price: 4000, category: "Milk Tea", favorite: false, emoji: "🌸" },
-            { id: 16, name: "Oolong Milk Tea", price: 4000, category: "Milk Tea", favorite: false, emoji: "🍃" },
-        ];
+const categories = [
+    '⭐ Favorites',
+    '☕ Hot Coffee', 
+    '🧊 Iced Coffee',
+    '🧋 Milk Tea',
+    '🍧 Frappe',
+    '🍋 Fruit Tea',
+    '🥛 Cream Top',
+    '✨ Signature',
+    '🍔 Food',
+    '🏪 Retail'
+];
+
+const menuItems = [
+    // ========== ☕ HOT COFFEE (7 items) ==========
+    { id: 1, name: "☕ Hot Latte", price: 4000, category: "☕ Hot Coffee", emoji: "☕", popular: true },
+    { id: 2, name: "☕ Hot Mocha", price: 5000, category: "☕ Hot Coffee", emoji: "☕🍫", popular: false },
+    { id: 3, name: "☕ Hot Americano", price: 3500, category: "☕ Hot Coffee", emoji: "☕💧", popular: true },
+    { id: 4, name: "☕ Hot Cappuccino", price: 5000, category: "☕ Hot Coffee", emoji: "☕✨", popular: false },
+    { id: 5, name: "☕ Espresso", price: 3500, category: "☕ Hot Coffee", emoji: "⚡☕", popular: false },
+    { id: 6, name: "☕ Caramel Macchiato (Hot)", price: 5500, category: "☕ Hot Coffee", emoji: "🍬☕", popular: true },
+    { id: 7, name: "☕ Vanilla Latte (Hot)", price: 4500, category: "☕ Hot Coffee", emoji: "🍦☕", popular: false },
+
+    // ========== 🧊 ICED COFFEE (6 items) ==========
+    { id: 8, name: "🧊 Iced Latte", price: 4500, category: "🧊 Iced Coffee", emoji: "🧊☕", popular: true },
+    { id: 9, name: "🧊 Iced Mocha", price: 5500, category: "🧊 Iced Coffee", emoji: "🧊🍫", popular: false },
+    { id: 10, name: "🧊 Iced Americano", price: 4000, category: "🧊 Iced Coffee", emoji: "🧊💧", popular: true },
+    { id: 11, name: "🧊 Iced Cappuccino", price: 5500, category: "🧊 Iced Coffee", emoji: "🧊✨", popular: false },
+    { id: 12, name: "🧊 Cold Brew", price: 5000, category: "🧊 Iced Coffee", emoji: "⏳☕", popular: false },
+    { id: 13, name: "🧊 Caramel Iced Coffee", price: 5500, category: "🧊 Iced Coffee", emoji: "🍬🧊", popular: true },
+
+    // ========== 🧋 MILK TEA (14 items) ==========
+    { id: 14, name: "🧋 Brown Sugar Milk Tea", price: 5000, category: "🧋 Milk Tea", emoji: "🍯🧋", popular: true },
+    { id: 15, name: "🧋 Classic Milk Tea", price: 4000, category: "🧋 Milk Tea", emoji: "🧋", popular: true },
+    { id: 16, name: "🧋 Jasmine Milk Tea", price: 4000, category: "🧋 Milk Tea", emoji: "🌸🧋", popular: false },
+    { id: 17, name: "🧋 Taro Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "💜🧋", popular: true },
+    { id: 18, name: "🧋 Thai Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🇹🇭🧋", popular: true },
+    { id: 19, name: "🧋 Matcha Milk Tea", price: 5000, category: "🧋 Milk Tea", emoji: "🍵🧋", popular: false },
+    { id: 20, name: "🧋 Strawberry Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🍓🧋", popular: false },
+    { id: 21, name: "🧋 Coconut Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🥥🧋", popular: false },
+    { id: 22, name: "🧋 Oolong Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🍃🧋", popular: false },
+    { id: 23, name: "🧋 Taiwan Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🇹🇼🧋", popular: false },
+    { id: 24, name: "🧋 Butterfly Pea Milk", price: 4500, category: "🧋 Milk Tea", emoji: "🦋🥛", popular: false },
+    { id: 25, name: "🧋 Pink Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🩷🧋", popular: false },
+    { id: 26, name: "🧋 Red Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🔴🧋", popular: false },
+    { id: 27, name: "🧋 Chocolate Milk", price: 4000, category: "🧋 Milk Tea", emoji: "🍫🥛", popular: false },
+
+    // ========== 🍧 FRAPPE (15 items) ==========
+    { id: 28, name: "🍧 Matcha Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍵🍧", popular: true },
+    { id: 29, name: "🍧 Strawberry Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍓🍧", popular: true },
+    { id: 30, name: "🍧 Chocolate Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍫🍧", popular: false },
+    { id: 31, name: "🍧 Coffee Frappe", price: 5500, category: "🍧 Frappe", emoji: "☕🍧", popular: true },
+    { id: 32, name: "🍧 Taro Frappe", price: 5500, category: "🍧 Frappe", emoji: "💜🍧", popular: false },
+    { id: 33, name: "🍧 Mocha Frappe", price: 6000, category: "🍧 Frappe", emoji: "🍫☕🍧", popular: false },
+    { id: 34, name: "🍧 Caramel Frappe", price: 6000, category: "🍧 Frappe", emoji: "🍬🍧", popular: false },
+    { id: 35, name: "🍧 Vanilla Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍦🍧", popular: false },
+    { id: 36, name: "🍧 Green Tea Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍃🍧", popular: false },
+    { id: 37, name: "🍧 Thai Tea Frappe", price: 5500, category: "🍧 Frappe", emoji: "🇹🇭🍧", popular: false },
+    { id: 38, name: "🍧 Brown Sugar Frappe", price: 6000, category: "🍧 Frappe", emoji: "🍯🍧", popular: true },
+    { id: 39, name: "🍧 Blueberry Frappe", price: 5500, category: "🍧 Frappe", emoji: "🫐🍧", popular: false },
+    { id: 40, name: "🍧 Passion Fruit Frappe", price: 5500, category: "🍧 Frappe", emoji: "🥭🍧", popular: false },
+    { id: 41, name: "🍧 Peach Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍑🍧", popular: false },
+    { id: 42, name: "🍧 Coconut Frappe", price: 6000, category: "🍧 Frappe", emoji: "🥥🍧", popular: false },
+
+    // ========== 🍋 FRUIT TEA (14 items) ==========
+    { id: 43, name: "🍓 Strawberry Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🍓🍋", popular: true },
+    { id: 44, name: "🍑 Peach Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🍑🍋", popular: true },
+    { id: 45, name: "🥭 Passion Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🥭🍋", popular: true },
+    { id: 46, name: "🍍 Pineapple Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🍍🍋", popular: false },
+    { id: 47, name: "🫐 Blueberry Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🫐🍋", popular: false },
+    { id: 48, name: "🍏 Green Apple Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🍏🍋", popular: false },
+    { id: 49, name: "🥝 Kiwi Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🥝🍋", popular: false },
+    { id: 50, name: "🍋 Honey Lemon Tea", price: 4500, category: "🍋 Fruit Tea", emoji: "🍯🍋", popular: true },
+    { id: 51, name: "🌹 Rose Honey Lemon", price: 4500, category: "🍋 Fruit Tea", emoji: "🌹🍯", popular: false },
+    { id: 52, name: "🌸 Jasmine Honey Lemon", price: 4500, category: "🍋 Fruit Tea", emoji: "🌸🍯", popular: false },
+    { id: 53, name: "🍹 Strawberry Soda", price: 4500, category: "🍋 Fruit Tea", emoji: "🍓🥤", popular: true },
+    { id: 54, name: "🍹 Peach Soda", price: 4500, category: "🍋 Fruit Tea", emoji: "🍑🥤", popular: false },
+    { id: 55, name: "🍹 Passion Fruit Soda", price: 4500, category: "🍋 Fruit Tea", emoji: "🥭🥤", popular: false },
+    { id: 56, name: "🍹 Blueberry Soda", price: 4500, category: "🍋 Fruit Tea", emoji: "🫐🥤", popular: false },
+
+    // ========== 🥛 CREAM TOP (12 items) ==========
+    { id: 57, name: "🥛 Brown Sugar Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍯🥛", popular: true },
+    { id: 58, name: "🥛 Jasmine Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🌸🥛", popular: false },
+    { id: 59, name: "🥛 Oolong Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍃🥛", popular: false },
+    { id: 60, name: "🥛 Taiwan Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🇹🇼🥛", popular: false },
+    { id: 61, name: "🥛 Peach Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍑🥛", popular: false },
+    { id: 62, name: "🥛 Strawberry Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍓🥛", popular: true },
+    { id: 63, name: "🥛 Matcha Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍵🥛", popular: false },
+    { id: 64, name: "🥛 Chocolate Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍫🥛", popular: false },
+    { id: 65, name: "🥛 Taro Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "💜🥛", popular: false },
+    { id: 66, name: "🥛 Thai Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🇹🇭🥛", popular: false },
+    { id: 67, name: "🥛 Coconut Macchiato", price: 6000, category: "🥛 Cream Top", emoji: "🥥🥛", popular: false },
+    { id: 68, name: "🥛 Caramel Macchiato", price: 6000, category: "🥛 Cream Top", emoji: "🍬🥛", popular: true },
+
+    // ========== ✨ SIGNATURE (10 items) ==========
+    { id: 69, name: "✨ Matcha Strawberry", price: 6000, category: "✨ Signature", emoji: "🍓🍵", popular: true },
+    { id: 70, name: "✨ Coconut Matcha", price: 6500, category: "✨ Signature", emoji: "🥥🍵", popular: true },
+    { id: 71, name: "✨ Coconut Latte", price: 6000, category: "✨ Signature", emoji: "🥥☕", popular: false },
+    { id: 72, name: "✨ Strawberry Latte", price: 5500, category: "✨ Signature", emoji: "🍓☕", popular: true },
+    { id: 73, name: "✨ Purple Potato Latte", price: 5500, category: "✨ Signature", emoji: "🟣☕", popular: false },
+    { id: 74, name: "✨ Coffee Coconut", price: 5500, category: "✨ Signature", emoji: "☕🥥", popular: false },
+    { id: 75, name: "✨ Fresh Passion Honey", price: 5500, category: "✨ Signature", emoji: "🥭🍯", popular: false },
+    { id: 76, name: "✨ Pineapple Passion", price: 5000, category: "✨ Signature", emoji: "🍍🥭", popular: false },
+    { id: 77, name: "✨ Peach Lemon", price: 4500, category: "✨ Signature", emoji: "🍑🍋", popular: true },
+    { id: 78, name: "✨ Jasmine Ice Tea", price: 4000, category: "✨ Signature", emoji: "🌸🧊", popular: false },
+
+    // ========== 🍔 FOOD (10 items) ==========
+    { id: 79, name: "🥪 Chicken Sandwich", price: 4000, category: "🍔 Food", emoji: "🥪", popular: true },
+    { id: 80, name: "🥐 Croissant", price: 3500, category: "🍔 Food", emoji: "🥐", popular: true },
+    { id: 81, name: "🍰 Cheesecake", price: 4500, category: "🍔 Food", emoji: "🍰", popular: true },
+    { id: 82, name: "🍪 Cookie", price: 2000, category: "🍔 Food", emoji: "🍪", popular: false },
+    { id: 83, name: "🍜 Instant Noodles", price: 3500, category: "🍔 Food", emoji: "🍜", popular: false },
+    { id: 84, name: "🥨 Pretzel", price: 3000, category: "🍔 Food", emoji: "🥨", popular: false },
+    { id: 85, name: "🍙 Rice Ball", price: 3500, category: "🍔 Food", emoji: "🍙", popular: false },
+    { id: 86, name: "🥗 Salad", price: 4500, category: "🍔 Food", emoji: "🥗", popular: false },
+    { id: 87, name: "🍟 Fries", price: 3500, category: "🍔 Food", emoji: "🍟", popular: true },
+    { id: 88, name: "🥚 Egg Tart", price: 3000, category: "🍔 Food", emoji: "🥚🥧", popular: false },
+
+    // ========== 🏪 RETAIL (8 items - separate section) ==========
+    { id: 89, name: "🍯 Pure Honey (500g)", price: 14000, category: "🏪 Retail", emoji: "🍯", popular: true },
+    { id: 90, name: "☕ Coffee Beans (500g)", price: 44000, category: "🏪 Retail", emoji: "🫘", popular: false },
+    { id: 91, name: "🍵 Matcha Powder (100g)", price: 40000, category: "🏪 Retail", emoji: "🍵", popular: false },
+    { id: 92, name: "🍃 Premium Tea Leaves", price: 33000, category: "🏪 Retail", emoji: "🍃", popular: false },
+    { id: 93, name: "🥛 Oat Milk (1L)", price: 7500, category: "🏪 Retail", emoji: "🥛", popular: true },
+    { id: 94, name: "🍓 Strawberry Jam", price: 21000, category: "🏪 Retail", emoji: "🍓", popular: false },
+    { id: 95, name: "🍬 Honey Lemon Powder", price: 19500, category: "🏪 Retail", emoji: "🍋", popular: false },
+    { id: 96, name: "🧴 Creamer (500g)", price: 14000, category: "🏪 Retail", emoji: "🧴", popular: false }
+];
 
         function renderCategories() {
             const container = document.getElementById('category-container');

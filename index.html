@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>KOOJI POS — Xiaomi Pad 5 Optimized</title>
     
-    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2d6a4f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     
-    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     
     <style>
@@ -21,7 +19,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* CSS Variables - Light Mode (Default) */
+        /* CSS Variables - Light Mode */
         :root {
             --bg-primary: #f8f6f2;
             --bg-secondary: #ffffff;
@@ -67,7 +65,7 @@
             --transition-slow: 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
 
-        /* Dark Mode Variables */
+        /* Dark Mode */
         body.dark {
             --bg-primary: #0f1214;
             --bg-secondary: #1a1d20;
@@ -101,7 +99,7 @@
             height: 100vh;
         }
 
-        /* Custom Scrollbar */
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -127,7 +125,7 @@
         .header {
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-light);
-            padding: 16px 24px;
+            padding: 12px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -141,26 +139,26 @@
         }
 
         .logo-icon {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
             color: white;
         }
 
         .store-name h1 {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             font-weight: 700;
             color: var(--primary);
         }
 
         .store-name p {
-            font-size: 0.75rem;
+            font-size: 0.688rem;
             color: var(--text-tertiary);
         }
 
@@ -175,16 +173,16 @@
             background: var(--bg-elevated);
             border: 1px solid var(--border-light);
             border-radius: var(--radius-full);
-            padding: 6px;
+            padding: 4px;
             display: flex;
-            gap: 6px;
+            gap: 4px;
             cursor: pointer;
         }
 
         .dark-toggle-option {
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: var(--radius-full);
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 500;
             transition: all var(--transition-fast);
             cursor: pointer;
@@ -195,11 +193,44 @@
             color: white;
         }
 
+        /* Mini Stats Bar - Option 2 (Abbreviated) */
+        .stats-minibar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 6px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .stat-mini {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            letter-spacing: -0.01em;
+        }
+
+        .stat-mini span {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-divider {
+            width: 1px;
+            height: 14px;
+            background: var(--border-light);
+        }
+
         /* Category Strip */
         .category-strip {
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-light);
-            padding: 12px 24px;
+            padding: 10px 24px;
             overflow-x: auto;
             white-space: nowrap;
             flex-shrink: 0;
@@ -209,12 +240,12 @@
         .category-pill {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 24px;
+            gap: 6px;
+            padding: 8px 20px;
             background: var(--bg-elevated);
             border: 1px solid var(--border-light);
             border-radius: var(--radius-full);
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             font-weight: 500;
             color: var(--text-secondary);
             margin-right: 10px;
@@ -232,30 +263,29 @@
             color: white;
         }
 
-        /* Menu Grid */
+        /* Menu Container */
         .menu-container {
             flex: 1;
             overflow-y: auto;
-            padding: 24px;
+            padding: 20px 24px;
         }
 
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 20px;
         }
 
-        /* For Xiaomi Pad 5 landscape (2560px) */
         @media (min-width: 2000px) {
             .menu-grid {
-                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
                 gap: 24px;
             }
         }
 
         @media (max-width: 1200px) {
             .menu-grid {
-                grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
                 gap: 16px;
             }
         }
@@ -269,6 +299,7 @@
             transition: all var(--transition-base);
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border-light);
+            position: relative;
         }
 
         .menu-card:hover {
@@ -282,7 +313,7 @@
         }
 
         .card-image {
-            height: 160px;
+            height: 140px;
             background: linear-gradient(135deg, var(--primary-soft), var(--bg-elevated));
             display: flex;
             align-items: center;
@@ -291,12 +322,12 @@
         }
 
         .card-content {
-            padding: 16px;
+            padding: 14px;
         }
 
         .card-title {
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9375rem;
             color: var(--text-primary);
             margin-bottom: 4px;
             white-space: nowrap;
@@ -306,71 +337,25 @@
 
         .card-price {
             font-weight: 700;
-            font-size: 1.125rem;
+            font-size: 1rem;
             color: var(--primary);
         }
 
         .favorite-star {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 10px;
+            right: 10px;
             background: rgba(0,0,0,0.5);
             backdrop-filter: blur(4px);
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 14px;
             cursor: pointer;
             transition: transform var(--transition-fast);
-        }
-
-        .favorite-star:hover {
-            transform: scale(1.1);
-        }
-
-        .menu-card {
-            position: relative;
-        }
-
-        /* Stats Dashboard */
-        .stats-dashboard {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 16px;
-            padding: 16px 24px;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-light);
-            flex-shrink: 0;
-        }
-
-        @media (max-width: 1200px) {
-            .stats-dashboard {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-
-        .stat-card {
-            background: var(--bg-elevated);
-            border-radius: var(--radius-md);
-            padding: 12px 16px;
-            border: 1px solid var(--border-light);
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--primary);
-            margin-bottom: 4px;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--text-primary);
         }
 
         /* Floating Cart Button */
@@ -381,13 +366,13 @@
             background: var(--primary);
             border: none;
             border-radius: var(--radius-full);
-            padding: 16px 24px;
+            padding: 14px 22px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             color: white;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9375rem;
             cursor: pointer;
             box-shadow: var(--shadow-xl);
             transition: all var(--transition-base);
@@ -402,12 +387,12 @@
         .cart-badge {
             background: var(--accent);
             border-radius: var(--radius-full);
-            padding: 4px 10px;
-            font-size: 0.875rem;
+            padding: 2px 8px;
+            font-size: 0.75rem;
             font-weight: 700;
         }
 
-        /* Bottom Sheet (Modal Cart) */
+        /* Bottom Sheet */
         .bottom-sheet {
             position: fixed;
             bottom: 0;
@@ -448,7 +433,7 @@
         }
 
         .sheet-header {
-            padding: 20px 24px;
+            padding: 18px 24px;
             border-bottom: 1px solid var(--border-light);
             display: flex;
             justify-content: space-between;
@@ -456,18 +441,18 @@
         }
 
         .sheet-header h2 {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             font-weight: 700;
         }
 
         .sheet-close {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: var(--bg-elevated);
-            border: none;
+            border: 1px solid var(--border-light);
             cursor: pointer;
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             color: var(--text-secondary);
         }
 
@@ -478,11 +463,38 @@
         }
 
         .sheet-footer {
-            padding: 20px 24px;
+            padding: 16px 24px 24px;
             border-top: 1px solid var(--border-light);
             background: var(--bg-secondary);
         }
 
+        /* Order Type Selector */
+        .order-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .order-type-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+            background: var(--bg-elevated);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.8125rem;
+            text-align: center;
+            transition: all var(--transition-fast);
+        }
+
+        .order-type-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Cart Items */
         .cart-item {
             display: flex;
             justify-content: space-between;
@@ -497,33 +509,36 @@
 
         .cart-item-name {
             font-weight: 600;
+            font-size: 0.875rem;
             margin-bottom: 4px;
         }
 
         .cart-item-modifiers {
-            font-size: 0.75rem;
+            font-size: 0.688rem;
             color: var(--text-tertiary);
         }
 
         .cart-item-price {
             font-weight: 600;
+            font-size: 0.875rem;
             color: var(--primary);
         }
 
         .cart-item-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .qty-btn {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-radius: var(--radius-sm);
             background: var(--bg-elevated);
             border: 1px solid var(--border-light);
             cursor: pointer;
             font-weight: 600;
+            font-size: 0.875rem;
         }
 
         .pay-btn {
@@ -531,65 +546,16 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 16px;
+            padding: 14px;
             border-radius: var(--radius-md);
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.9375rem;
             cursor: pointer;
             transition: all var(--transition-fast);
         }
 
         .pay-btn:hover {
             background: var(--primary-dark);
-        }
-
-        /* Order Type Segmented Control */
-        .order-type-selector {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .order-type-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-light);
-            background: var(--bg-elevated);
-            cursor: pointer;
-            font-weight: 500;
-            text-align: center;
-        }
-
-        .order-type-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        /* Toast Notifications */
-        .toast {
-            position: fixed;
-            top: 80px;
-            right: 24px;
-            background: var(--bg-secondary);
-            border-left: 4px solid var(--primary);
-            padding: 12px 20px;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            z-index: 300;
-            animation: slideInRight 0.3s ease;
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
         }
 
         /* Kitchen View */
@@ -612,8 +578,9 @@
         }
 
         .kitchen-column-header {
-            padding: 16px;
+            padding: 14px 16px;
             font-weight: 700;
+            font-size: 0.875rem;
             border-bottom: 1px solid var(--border-light);
         }
 
@@ -624,7 +591,7 @@
         .kitchen-orders {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
+            padding: 14px;
         }
 
         .kitchen-order-card {
@@ -635,7 +602,27 @@
             border: 1px solid var(--border-light);
         }
 
-        /* Hidden utility */
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary);
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: 300;
+            font-size: 0.8125rem;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Utilities */
         .hidden {
             display: none !important;
         }
@@ -678,17 +665,16 @@
                 <div class="logo-icon">K</div>
                 <div class="store-name">
                     <h1>KOOJI Cafe & TEA</h1>
-                    <p>Store ID: KH-8821 | POS Pro v10.0</p>
+                    <p>Store ID: KH-8821 | POS v10</p>
                 </div>
             </div>
             <div class="header-actions">
-                <!-- Dark Mode Toggle -->
                 <div class="dark-toggle" id="darkModeToggle">
                     <div class="dark-toggle-option" data-theme="light">☀️ Light</div>
                     <div class="dark-toggle-option" data-theme="dark">🌙 Dark</div>
                 </div>
-                <button onclick="switchTab('kitchen')" class="category-pill" style="margin:0;">👨‍🍳 Kitchen</button>
-                <button onclick="switchTab('admin')" class="category-pill" style="margin:0;">👑 Admin</button>
+                <button onclick="switchTab('kitchen')" class="category-pill" style="margin:0; padding:6px 16px;">👨‍🍳 Kitchen</button>
+                <button onclick="switchTab('admin')" class="category-pill" style="margin:0; padding:6px 16px;">👑 Admin</button>
                 <button onclick="showLoginModal()" class="category-pill" style="margin:0; background:var(--primary); color:white;" id="login-btn">🔐 Login</button>
                 <button onclick="logout()" class="category-pill" style="display:none; background:var(--danger); color:white;" id="logout-btn">🚪 Logout</button>
             </div>
@@ -699,25 +685,29 @@
             
             <!-- POS VIEW -->
             <div id="view-pos" class="view-section flex flex-col h-full">
-                <!-- Stats Dashboard -->
-                <div class="stats-dashboard">
-                    <div class="stat-card"><div class="stat-label">💰 Today's Revenue</div><div class="stat-value" id="stat-revenue">៛ 0</div></div>
-                    <div class="stat-card"><div class="stat-label">📋 Today's Orders</div><div class="stat-value" id="stat-orders">0</div></div>
-                    <div class="stat-card"><div class="stat-label">⭐ Avg Order</div><div class="stat-value" id="stat-avg">៛ 0</div></div>
-                    <div class="stat-card"><div class="stat-label">🎯 Loyalty Points</div><div class="stat-value" id="stat-points">0</div></div>
-                    <div class="stat-card"><div class="stat-label">⏱️ Peak Hour</div><div class="stat-value">3-4 PM</div></div>
+                <!-- Mini Stats Bar - Option 2 -->
+                <div class="stats-minibar">
+                    <div class="stat-mini">📊 Today: <span id="stat-revenue">1.28M</span> ៛</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-mini"><span id="stat-orders">47</span> orders</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-mini">Avg <span id="stat-avg">27.3K</span> ៛</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-mini"><span id="stat-points">2.4K</span> pts</div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-mini">Peak <span id="stat-peak">3-4PM</span></div>
                 </div>
 
                 <!-- Category Strip -->
                 <div class="category-strip" id="category-container"></div>
 
                 <!-- Menu Grid -->
-                <div class="menu-container" id="menu-container">
+                <div class="menu-container">
                     <div class="menu-grid" id="menu-grid"></div>
                 </div>
             </div>
 
-            <!-- KITCHEN VIEW (simplified) -->
+            <!-- KITCHEN VIEW -->
             <div id="view-kitchen" class="view-section hidden">
                 <div class="kitchen-container">
                     <div class="kitchen-column pending">
@@ -735,10 +725,15 @@
                 </div>
             </div>
 
-            <!-- ADMIN VIEW (simplified placeholder) -->
+            <!-- ADMIN VIEW (placeholder) -->
             <div id="view-admin" class="view-section hidden overflow-y-auto p-6">
-                <h2 style="font-size:1.5rem; margin-bottom:1rem;">👑 Admin Panel</h2>
-                <p>Admin features coming soon in this redesign...</p>
+                <h2 style="font-size:1.25rem; margin-bottom:1rem; font-weight:700;">👑 Admin Panel</h2>
+                <p style="color:var(--text-secondary);">Admin features: Manage items, staff, categories, and view reports.</p>
+                <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
+                    <button class="category-pill" style="background:var(--primary); color:white;" onclick="alert('Add Item')">➕ Add Item</button>
+                    <button class="category-pill" onclick="alert('Manage Staff')">👥 Manage Staff</button>
+                    <button class="category-pill" onclick="alert('View Reports')">📊 View Reports</button>
+                </div>
             </div>
         </div>
 
@@ -766,20 +761,20 @@
                 <div id="cart-items-list"></div>
             </div>
             <div class="sheet-footer">
-                <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.875rem;">
                     <span>Subtotal</span>
                     <span id="cart-subtotal">៛ 0</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                    <span>Discount</span>
-                    <select id="discount-select" onchange="updateTotals()" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:8px; padding:4px 8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <span style="font-size:0.875rem;">Discount</span>
+                    <select id="discount-select" onchange="updateTotals()" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:8px; padding:6px 10px; font-size:0.75rem;">
                         <option value="0">None</option>
                         <option value="5">5%</option>
                         <option value="10">10%</option>
                         <option value="25">25%</option>
                     </select>
                 </div>
-                <div style="display:flex; justify-content:space-between; font-size:1.25rem; font-weight:700; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; font-size:1.125rem; font-weight:700; margin-bottom:16px;">
                     <span>TOTAL</span>
                     <span id="cart-total">៛ 0</span>
                 </div>
@@ -789,7 +784,7 @@
     </div>
 
     <script>
-        // ========== DARK MODE TOGGLE ==========
+        // ========== DARK MODE ==========
         function initDarkMode() {
             const savedTheme = localStorage.getItem('koojiTheme') || 'light';
             if (savedTheme === 'dark') {
@@ -827,7 +822,7 @@
         // ========== STATE ==========
         let cart = [];
         let currentOrderType = 'here';
-        let selectedDiscount = 0;
+        let currentUser = null;
 
         // ========== CART SHEET ==========
         function openCartSheet() {
@@ -858,7 +853,7 @@
             }
             updateCartBadge();
             renderCartSheet();
-            showToast(`Added ${item.name} to cart`);
+            showToast(`Added ${item.name} to cart 🧋`);
         }
 
         function updateCartBadge() {
@@ -888,8 +883,8 @@
             const discountAmount = Math.round(subtotal * discountPercent / 100);
             const total = subtotal - discountAmount;
             
-            document.getElementById('cart-subtotal').innerText = `៛ ${subtotal.toLocaleString()}`;
-            document.getElementById('cart-total').innerText = `៛ ${total.toLocaleString()}`;
+            document.getElementById('cart-subtotal').innerHTML = `៛ ${subtotal.toLocaleString()}`;
+            document.getElementById('cart-total').innerHTML = `៛ ${total.toLocaleString()}`;
             return { subtotal, discountAmount, total };
         }
 
@@ -898,7 +893,7 @@
             if (!container) return;
             
             if (cart.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-tertiary);">🛒 Cart is empty<br>Tap a drink to start</div>';
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-tertiary); font-size:0.875rem;">🛒 Cart is empty<br>Tap a drink to start</div>';
                 updateTotals();
                 return;
             }
@@ -912,7 +907,7 @@
                     <div class="cart-item-price">៛ ${(item.price * item.qty).toLocaleString()}</div>
                     <div class="cart-item-actions">
                         <button class="qty-btn" onclick="changeQty(${idx}, -1)">-</button>
-                        <span style="min-width:24px; text-align:center;">${item.qty}</span>
+                        <span style="min-width:20px; text-align:center; font-size:0.875rem;">${item.qty}</span>
                         <button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button>
                         <button class="qty-btn" onclick="removeCartItem(${idx})" style="color:var(--danger);">🗑️</button>
                     </div>
@@ -927,14 +922,31 @@
                 return;
             }
             const { total } = updateTotals();
-            showToast(`Order placed! Total: ៛ ${total.toLocaleString()}`);
-            closeCartSheet();
+            showToast(`✅ Order placed! Total: ៛ ${total.toLocaleString()}`);
+            
+            // Send to kitchen
+            const order = {
+                id: '#' + Math.floor(Math.random() * 1000),
+                items: [...cart],
+                total: total,
+                time: new Date(),
+                status: 'pending'
+            };
+            kitchenQueue.push(order);
+            renderKitchen();
+            
             cart = [];
             updateCartBadge();
             renderCartSheet();
+            closeCartSheet();
+            
+            // Auto-switch to kitchen after 1 second
+            setTimeout(() => {
+                switchTab('kitchen');
+            }, 1000);
         }
 
-        function showToast(message, type = 'success') {
+        function showToast(message) {
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.innerHTML = message;
@@ -942,8 +954,8 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // ========== MOCK MENU DATA ==========
-        const categories = ['All', 'Favorites', 'Coffee', 'Milk Tea', 'Frappe', 'Foods'];
+        // ========== MENU DATA ==========
+        const categories = ['All', '⭐ Favorites', '☕ Coffee', '🍵 Milk Tea', '🍧 Frappe', '🥪 Foods'];
         let currentCategory = 'All';
 
         const menuItems = [
@@ -959,13 +971,17 @@
             { id: 10, name: "Sandwich", price: 3000, category: "Foods", favorite: false, emoji: "🥪" },
             { id: 11, name: "Croissant", price: 2500, category: "Foods", favorite: false, emoji: "🥐" },
             { id: 12, name: "Cake Slice", price: 3500, category: "Foods", favorite: false, emoji: "🍰" },
+            { id: 13, name: "Espresso", price: 3500, category: "Coffee", favorite: false, emoji: "☕" },
+            { id: 14, name: "Caramel Macchiato", price: 5500, category: "Coffee", favorite: false, emoji: "🍬" },
+            { id: 15, name: "Jasmine Milk Tea", price: 4000, category: "Milk Tea", favorite: false, emoji: "🌸" },
+            { id: 16, name: "Oolong Milk Tea", price: 4000, category: "Milk Tea", favorite: false, emoji: "🍃" },
         ];
 
         function renderCategories() {
             const container = document.getElementById('category-container');
             container.innerHTML = categories.map(cat => `
                 <div class="category-pill ${cat === currentCategory ? 'active' : ''}" onclick="filterCategory('${cat}')">
-                    ${cat === 'Favorites' ? '⭐' : ''} ${cat}
+                    ${cat}
                 </div>
             `).join('');
         }
@@ -980,10 +996,10 @@
             const container = document.getElementById('menu-grid');
             let filtered = menuItems;
             if (currentCategory !== 'All') {
-                if (currentCategory === 'Favorites') {
+                if (currentCategory === '⭐ Favorites') {
                     filtered = menuItems.filter(i => i.favorite);
                 } else {
-                    filtered = menuItems.filter(i => i.category === currentCategory);
+                    filtered = menuItems.filter(i => i.category === currentCategory.replace('⭐ ', '').replace('☕ ', '').replace('🍵 ', '').replace('🍧 ', '').replace('🥪 ', ''));
                 }
             }
             
@@ -999,22 +1015,84 @@
             `).join('');
         }
 
-        // ========== STATS (mock) ==========
-        function updateStats() {
-            document.getElementById('stat-revenue').innerText = '៛ 1,284,500';
-            document.getElementById('stat-orders').innerText = '47';
-            document.getElementById('stat-avg').innerText = '៛ 27,330';
-            document.getElementById('stat-points').innerText = '2,451';
+        // ========== KITCHEN ==========
+        let kitchenQueue = [];
+
+        function renderKitchen() {
+            const pendingDiv = document.getElementById('kitchen-pending');
+            const preparingDiv = document.getElementById('kitchen-preparing');
+            const readyDiv = document.getElementById('kitchen-ready');
+            
+            if (!pendingDiv) return;
+            
+            let pending = kitchenQueue.filter(o => o.status === 'pending');
+            let preparing = kitchenQueue.filter(o => o.status === 'preparing');
+            let ready = kitchenQueue.filter(o => o.status === 'ready');
+            
+            pendingDiv.innerHTML = pending.map(order => `
+                <div class="kitchen-order-card">
+                    <div style="font-weight:700; margin-bottom:6px;">${order.id}</div>
+                    ${order.items.map(i => `<div style="font-size:0.75rem;">${i.qty}x ${i.name}</div>`).join('')}
+                    <button onclick="updateOrderStatus('${order.id}', 'preparing')" style="margin-top:8px; background:var(--primary); color:white; border:none; padding:6px 12px; border-radius:20px; font-size:0.688rem; cursor:pointer;">▶️ Start Prep</button>
+                </div>
+            `).join('');
+            
+            preparingDiv.innerHTML = preparing.map(order => `
+                <div class="kitchen-order-card">
+                    <div style="font-weight:700; margin-bottom:6px;">${order.id}</div>
+                    ${order.items.map(i => `<div style="font-size:0.75rem;">${i.qty}x ${i.name}</div>`).join('')}
+                    <button onclick="updateOrderStatus('${order.id}', 'ready')" style="margin-top:8px; background:var(--accent); color:white; border:none; padding:6px 12px; border-radius:20px; font-size:0.688rem; cursor:pointer;">✅ Mark Ready</button>
+                </div>
+            `).join('');
+            
+            readyDiv.innerHTML = ready.map(order => `
+                <div class="kitchen-order-card">
+                    <div style="font-weight:700; margin-bottom:6px;">${order.id}</div>
+                    ${order.items.map(i => `<div style="font-size:0.75rem;">${i.qty}x ${i.name}</div>`).join('')}
+                    <button onclick="updateOrderStatus('${order.id}', 'complete')" style="margin-top:8px; background:var(--success); color:white; border:none; padding:6px 12px; border-radius:20px; font-size:0.688rem; cursor:pointer;">🏁 Complete</button>
+                </div>
+            `).join('');
+            
+            document.getElementById('count-pending').innerText = pending.length;
+            document.getElementById('count-preparing').innerText = preparing.length;
+            document.getElementById('count-ready').innerText = ready.length;
+        }
+
+        function updateOrderStatus(id, newStatus) {
+            const order = kitchenQueue.find(o => o.id === id);
+            if (order) {
+                if (newStatus === 'complete') {
+                    kitchenQueue = kitchenQueue.filter(o => o.id !== id);
+                } else {
+                    order.status = newStatus;
+                }
+                renderKitchen();
+            }
         }
 
         // ========== NAVIGATION ==========
         function switchTab(tabId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            if (tabId === 'kitchen') renderKitchen();
         }
 
-        function showLoginModal() { alert("Login modal - coming soon"); }
-        function logout() { alert("Logged out"); }
+        function showLoginModal() { 
+            alert("🔐 Login: Use PIN 1234 for Admin, 0000 for Cashier");
+        }
+        
+        function logout() { 
+            currentUser = null;
+            alert("Logged out");
+        }
+
+        // ========== UPDATE STATS ==========
+        function updateStats() {
+            document.getElementById('stat-revenue').innerText = '1.28M';
+            document.getElementById('stat-orders').innerText = '47';
+            document.getElementById('stat-avg').innerText = '27.3K';
+            document.getElementById('stat-points').innerText = '2.4K';
+        }
 
         // ========== INIT ==========
         document.addEventListener('DOMContentLoaded', () => {

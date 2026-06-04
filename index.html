@@ -465,21 +465,22 @@
         }
 
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 300;
-            opacity: 0;
-            visibility: hidden;
-            transition: all var(--transition-slow);
-        }
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-slow);
+}
+
         .modal-overlay.open { opacity: 1; visibility: visible; }
         .modal-content {
             background: var(--bg-secondary);
@@ -492,7 +493,11 @@
             transform: scale(0.95);
             transition: transform var(--transition-base);
         }
-        .modal-overlay.open .modal-content { transform: scale(1); }
+        /* ADD THIS NEW RULE */
+.modal-overlay.open .modal-content {
+    transform: scale(1);
+}
+       
 
         .toast {
             position: fixed;
@@ -1404,33 +1409,69 @@
         }
 
         // ========== LOGIN ==========
-        function showLoginModal() { document.getElementById('login-modal').classList.add('open'); }
-        function closeLoginModal() { document.getElementById('login-modal').classList.remove('open'); }
-        
-        let pinBuffer = '';
-        function addPinDigit(d) { 
-            const input = document.getElementById('login-pin');
-            if (input.value.length < 4) input.value += d;
-            if (input.value.length === 4) submitLogin();
-        }
-        function clearPin() { document.getElementById('login-pin').value = ''; document.getElementById('login-error').classList.add('hidden'); }
-        
-        function submitLogin() {
-            const pin = document.getElementById('login-pin').value;
-            if (staffMembers[pin]) {
-                currentUser = staffMembers[pin];
-                updateUIForUser();
-                closeLoginModal();
-                document.getElementById('login-pin').value = '';
-                showToast(`Welcome ${currentUser.name}!`);
-                renderMenu(); // Re-render to show edit buttons if admin
-                renderAdminItemsTable();
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-                document.getElementById('login-pin').value = '';
-            }
-        }
+        function showLoginModal() { 
+    var modal = document.getElementById('login-modal');
+    modal.classList.add('open');
+    console.log('Login modal opened');
+    document.getElementById('login-pin').value = '';
+    document.getElementById('login-error').classList.add('hidden');
+}
 
+function closeLoginModal() { 
+    var modal = document.getElementById('login-modal');
+    modal.classList.remove('open');
+    console.log('Login modal closed');
+}        
+        let pinBuffer = '';
+function addPinDigit(d) { 
+    const input = document.getElementById('login-pin');
+    const errorDiv = document.getElementById('login-error');
+    errorDiv.classList.add('hidden'); // Hide error when typing
+    if (input.value.length < 4) input.value += d;
+    if (input.value.length === 4) submitLogin();
+}        function clearPin() { document.getElementById('login-pin').value = ''; document.getElementById('login-error').classList.add('hidden'); }
+        
+function submitLogin() {
+    const pin = document.getElementById('login-pin').value;
+    console.log('Login attempt with PIN:', pin);
+    
+    // Hardcoded check for demo accounts (backup)
+    if (pin === '1234') {
+        currentUser = { name: 'Admin', role: 'admin' };
+        updateUIForUser();
+        closeLoginModal();
+        document.getElementById('login-pin').value = '';
+        showToast('Welcome Admin! Full control enabled.');
+        renderMenu();
+        renderAdminItemsTable();
+        return;
+    }
+    
+    if (pin === '0000') {
+        currentUser = { name: 'Cashier', role: 'cashier' };
+        updateUIForUser();
+        closeLoginModal();
+        document.getElementById('login-pin').value = '';
+        showToast('Welcome Cashier!');
+        renderMenu();
+        return;
+    }
+    
+    // Check staffMembers array
+    if (staffMembers[pin]) {
+        currentUser = staffMembers[pin];
+        updateUIForUser();
+        closeLoginModal();
+        document.getElementById('login-pin').value = '';
+        showToast(`Welcome ${currentUser.name}!`);
+        renderMenu();
+        renderAdminItemsTable();
+    } else {
+        document.getElementById('login-error').classList.remove('hidden');
+        document.getElementById('login-pin').value = '';
+        console.log('Invalid PIN');
+    }
+}
         function logout() { currentUser = null; updateUIForUser(); showToast('Logged out'); renderMenu(); }
 
         function updateUIForUser() {

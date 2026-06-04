@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>KOOJI POS — Xiaomi Pad 5 Optimized</title>
+    <title>KOOJI POS — Xiaomi Pad 5 | Full Features</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2d6a4f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     
     <style>
@@ -193,7 +194,7 @@
             color: white;
         }
 
-        /* Mini Stats Bar - Option 2 (Abbreviated) */
+        /* Mini Stats Bar */
         .stats-minibar {
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-light);
@@ -602,6 +603,45 @@
             border: 1px solid var(--border-light);
         }
 
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-slow);
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-xl);
+            max-width: 500px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 24px;
+            transform: scale(0.95);
+            transition: transform var(--transition-base);
+        }
+
+        .modal-overlay.open .modal-content {
+            transform: scale(1);
+        }
+
         /* Toast */
         .toast {
             position: fixed;
@@ -612,7 +652,7 @@
             padding: 10px 18px;
             border-radius: var(--radius-md);
             box-shadow: var(--shadow-lg);
-            z-index: 300;
+            z-index: 400;
             font-size: 0.8125rem;
             animation: slideInRight 0.3s ease;
         }
@@ -620,6 +660,29 @@
         @keyframes slideInRight {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Admin Panel */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .admin-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: center;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
         }
 
         /* Utilities */
@@ -655,6 +718,17 @@
         .overflow-y-auto {
             overflow-y: auto;
         }
+
+        .mt-4 { margin-top: 16px; }
+        .mb-4 { margin-bottom: 16px; }
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .w-full { width: 100%; }
+        .gap-2 { gap: 8px; }
+        .gap-3 { gap: 12px; }
     </style>
 </head>
 <body>
@@ -665,7 +739,7 @@
                 <div class="logo-icon">K</div>
                 <div class="store-name">
                     <h1>KOOJI Cafe & TEA</h1>
-                    <p>Store ID: KH-8821 | POS v10</p>
+                    <p>Store ID: <span id="store-id">KH-8821</span> | POS v11</p>
                 </div>
             </div>
             <div class="header-actions">
@@ -675,6 +749,7 @@
                 </div>
                 <button onclick="switchTab('kitchen')" class="category-pill" style="margin:0; padding:6px 16px;">👨‍🍳 Kitchen</button>
                 <button onclick="switchTab('admin')" class="category-pill" style="margin:0; padding:6px 16px;">👑 Admin</button>
+                <button onclick="switchTab('reports')" class="category-pill" style="margin:0; padding:6px 16px;">📊 Reports</button>
                 <button onclick="showLoginModal()" class="category-pill" style="margin:0; background:var(--primary); color:white;" id="login-btn">🔐 Login</button>
                 <button onclick="logout()" class="category-pill" style="display:none; background:var(--danger); color:white;" id="logout-btn">🚪 Logout</button>
             </div>
@@ -685,17 +760,17 @@
             
             <!-- POS VIEW -->
             <div id="view-pos" class="view-section flex flex-col h-full">
-                <!-- Mini Stats Bar - Option 2 -->
+                <!-- Mini Stats Bar -->
                 <div class="stats-minibar">
-                    <div class="stat-mini">📊 Today: <span id="stat-revenue">1.28M</span> ៛</div>
+                    <div class="stat-mini">📊 Today: <span id="stat-revenue">0</span> ៛</div>
                     <div class="stat-divider"></div>
-                    <div class="stat-mini"><span id="stat-orders">47</span> orders</div>
+                    <div class="stat-mini"><span id="stat-orders">0</span> orders</div>
                     <div class="stat-divider"></div>
-                    <div class="stat-mini">Avg <span id="stat-avg">27.3K</span> ៛</div>
+                    <div class="stat-mini">Avg <span id="stat-avg">0</span> ៛</div>
                     <div class="stat-divider"></div>
-                    <div class="stat-mini"><span id="stat-points">2.4K</span> pts</div>
+                    <div class="stat-mini"><span id="stat-points">0</span> pts</div>
                     <div class="stat-divider"></div>
-                    <div class="stat-mini">Peak <span id="stat-peak">3-4PM</span></div>
+                    <div class="stat-mini">Expense <span id="stat-expense">0</span> ៛</div>
                 </div>
 
                 <!-- Category Strip -->
@@ -725,14 +800,44 @@
                 </div>
             </div>
 
-            <!-- ADMIN VIEW (placeholder) -->
+            <!-- ADMIN VIEW -->
             <div id="view-admin" class="view-section hidden overflow-y-auto p-6">
                 <h2 style="font-size:1.25rem; margin-bottom:1rem; font-weight:700;">👑 Admin Panel</h2>
-                <p style="color:var(--text-secondary);">Admin features: Manage items, staff, categories, and view reports.</p>
-                <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-                    <button class="category-pill" style="background:var(--primary); color:white;" onclick="alert('Add Item')">➕ Add Item</button>
-                    <button class="category-pill" onclick="alert('Manage Staff')">👥 Manage Staff</button>
-                    <button class="category-pill" onclick="alert('View Reports')">📊 View Reports</button>
+                
+                <div class="admin-grid">
+                    <div class="admin-card" onclick="openItemModal()">➕ Add Menu Item</div>
+                    <div class="admin-card" onclick="openCategoryModal()">🏷️ Add Category</div>
+                    <div class="admin-card" onclick="openStaffModal()">👥 Staff Management</div>
+                    <div class="admin-card" onclick="openAddCustomerModal()">👤 Add Customer</div>
+                    <div class="admin-card" onclick="openExpenseModal()">💸 Add Expense</div>
+                    <div class="admin-card" onclick="backupData()">💾 Backup Data</div>
+                    <div class="admin-card" onclick="restoreData()">📂 Restore Data</div>
+                    <div class="admin-card" onclick="triggerExport()">📤 Export Orders</div>
+                    <div class="admin-card" onclick="closeSale()">🔒 Close Sale</div>
+                    <div class="admin-card" onclick="factoryReset()" style="background:var(--danger-soft); color:var(--danger);">🗑️ Factory Reset</div>
+                </div>
+
+                <div style="background:var(--bg-elevated); border-radius:var(--radius-lg); padding:20px; margin-top:20px;">
+                    <h3 class="font-bold mb-3">📦 Manage Items</h3>
+                    <div class="overflow-x-auto" style="max-height:300px; overflow-y:auto;">
+                        <table style="width:100%; font-size:0.75rem;">
+                            <thead style="background:var(--bg-secondary);"><tr><th class="p-2">Name</th><th>Price</th><th>⭐</th><th></th></tr></thead>
+                            <tbody id="admin-stock-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPORTS VIEW -->
+            <div id="view-reports" class="view-section hidden overflow-y-auto p-6">
+                <h2 style="font-size:1.25rem; margin-bottom:1rem; font-weight:700;">📊 Reports</h2>
+                <div style="background:var(--bg-elevated); border-radius:var(--radius-lg); padding:20px;">
+                    <canvas id="revenueChart" style="max-height:300px;"></canvas>
+                </div>
+                <div class="admin-grid" style="margin-top:20px;">
+                    <div class="admin-card" onclick="generateDailyReport()">📋 Daily Report</div>
+                    <div class="admin-card" onclick="exportDailyRecords()">📥 Export CSV</div>
+                    <div class="admin-card" onclick="togglePanicMode()" id="panic-btn">🚨 Hide Numbers</div>
                 </div>
             </div>
         </div>
@@ -743,10 +848,8 @@
             <span class="cart-badge" id="cartItemCount">0</span>
         </button>
 
-        <!-- Bottom Sheet Overlay -->
+        <!-- Bottom Sheet Overlay & Cart -->
         <div class="sheet-overlay" id="sheetOverlay" onclick="closeCartSheet()"></div>
-
-        <!-- Bottom Sheet Cart -->
         <div class="bottom-sheet" id="cartSheet">
             <div class="sheet-header">
                 <h2>🛒 Your Order</h2>
@@ -772,35 +875,220 @@
                         <option value="5">5%</option>
                         <option value="10">10%</option>
                         <option value="25">25%</option>
+                        <option value="50">50%</option>
+                        <option value="100">🎁 Free</option>
                     </select>
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:1.125rem; font-weight:700; margin-bottom:16px;">
                     <span>TOTAL</span>
                     <span id="cart-total">៛ 0</span>
                 </div>
-                <button class="pay-btn" onclick="checkout()">💳 Proceed to Payment</button>
+                <input type="text" id="customer-name-input" placeholder="Customer name" style="width:100%; padding:10px; margin-bottom:12px; background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:var(--radius-md);">
+                <button class="pay-btn" onclick="openPaymentModal()">💳 PAY NOW</button>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <div id="payment-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="font-bold text-lg mb-4">💳 Payment</h3>
+                <div class="text-center mb-4"><span id="payment-amount" class="text-lg font-bold">៛ 0</span></div>
+                <div class="gap-2 flex flex-col">
+                    <button onclick="confirmPayment('cash')" class="pay-btn" style="background:var(--success);">💵 Cash</button>
+                    <button onclick="confirmPayment('bank')" class="pay-btn" style="background:var(--accent);">🏦 Bank Transfer</button>
+                </div>
+                <button onclick="closePaymentModal()" class="w-full mt-3 p-2" style="background:var(--bg-elevated); border-radius:var(--radius-md);">Cancel</button>
+            </div>
+        </div>
+
+        <div id="login-modal" class="modal-overlay">
+            <div class="modal-content text-center">
+                <div class="text-4xl mb-2">👤</div>
+                <h3 class="font-bold text-lg">Staff Login</h3>
+                <p class="text-sm text-tertiary mb-4">Demo: 1234 (Admin) / 0000 (Cashier)</p>
+                <input type="password" id="login-pin" maxlength="4" class="w-full p-3 text-center text-2xl font-bold tracking-wider" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:var(--radius-md); margin-bottom:16px;" placeholder="****">
+                <div id="login-error" class="text-danger text-sm hidden mb-2">Invalid PIN</div>
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                    <button onclick="addPinDigit('1')" class="p-3 rounded" style="background:var(--bg-elevated);">1</button>
+                    <button onclick="addPinDigit('2')" class="p-3 rounded" style="background:var(--bg-elevated);">2</button>
+                    <button onclick="addPinDigit('3')" class="p-3 rounded" style="background:var(--bg-elevated);">3</button>
+                    <button onclick="addPinDigit('4')" class="p-3 rounded" style="background:var(--bg-elevated);">4</button>
+                    <button onclick="addPinDigit('5')" class="p-3 rounded" style="background:var(--bg-elevated);">5</button>
+                    <button onclick="addPinDigit('6')" class="p-3 rounded" style="background:var(--bg-elevated);">6</button>
+                    <button onclick="addPinDigit('7')" class="p-3 rounded" style="background:var(--bg-elevated);">7</button>
+                    <button onclick="addPinDigit('8')" class="p-3 rounded" style="background:var(--bg-elevated);">8</button>
+                    <button onclick="addPinDigit('9')" class="p-3 rounded" style="background:var(--bg-elevated);">9</button>
+                    <button onclick="clearPin()" class="p-3 rounded" style="background:var(--danger-soft);">C</button>
+                    <button onclick="addPinDigit('0')" class="p-3 rounded" style="background:var(--bg-elevated);">0</button>
+                    <button onclick="submitLogin()" class="p-3 rounded" style="background:var(--primary); color:white;">→</button>
+                </div>
+                <button onclick="closeLoginModal()" class="text-sm">Cancel</button>
+            </div>
+        </div>
+
+        <div id="item-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="font-bold text-lg mb-4">➕ Add/Edit Item</h3>
+                <input type="text" id="item-name" placeholder="Name" class="w-full p-2 mb-2" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:var(--radius-sm);">
+                <select id="item-category" class="w-full p-2 mb-2" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:var(--radius-sm);"></select>
+                <input type="number" id="item-price" placeholder="Price" class="w-full p-2 mb-2" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:var(--radius-sm);">
+                <div class="flex gap-2 mt-3">
+                    <button onclick="closeItemModal()" class="flex-1 p-2" style="background:var(--bg-elevated); border-radius:var(--radius-sm);">Cancel</button>
+                    <button onclick="saveNewItem()" class="flex-1 p-2" style="background:var(--primary); color:white; border-radius:var(--radius-sm);">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="category-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="font-bold text-lg mb-4">🏷️ Add Category</h3>
+                <input type="text" id="category-name" placeholder="Category name" class="w-full p-2 mb-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:var(--radius-sm);">
+                <div class="flex gap-2">
+                    <button onclick="closeCategoryModal()" class="flex-1 p-2" style="background:var(--bg-elevated); border-radius:var(--radius-sm);">Cancel</button>
+                    <button onclick="saveNewCategory()" class="flex-1 p-2" style="background:var(--primary); color:white; border-radius:var(--radius-sm);">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="staff-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="font-bold text-lg mb-4">👥 Staff Management</h3>
+                <div style="background:var(--bg-elevated); border-radius:var(--radius-md); padding:12px; margin-bottom:16px;">
+                    <h4 class="font-medium mb-2">Add New Staff</h4>
+                    <input type="text" id="new-staff-name" placeholder="Name" class="w-full p-2 mb-2" style="background:var(--bg-secondary); border:1px solid var(--border-light); border-radius:var(--radius-sm);">
+                    <input type="text" id="new-staff-pin" maxlength="4" placeholder="4-digit PIN" class="w-full p-2 mb-2" style="background:var(--bg-secondary); border:1px solid var(--border-light); border-radius:var(--radius-sm);">
+                    <select id="new-staff-role" class="w-full p-2 mb-2" style="background:var(--bg-secondary); border:1px solid var(--border-light); border-radius:var(--radius-sm);">
+                        <option value="cashier">Cashier</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <button onclick="addStaffMember()" class="w-full p-2" style="background:var(--primary); color:white; border-radius:var(--radius-sm);">Add Staff</button>
+                </div>
+                <div id="staff-list" style="max-height:300px; overflow-y:auto;"></div>
+                <button onclick="closeStaffModal()" class="w-full mt-3 p-2" style="background:var(--bg-elevated); border-radius:var(--radius-sm);">Close</button>
+            </div>
+        </div>
+
+        <div id="customer-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="font-bold text-lg mb-4">👤 Add Customer</h3>
+                <input type="text" id="new-customer-name" placeholder="Name" class="w-full p-2 mb-2" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:var(--radius-sm);">
+                <input type="text" id="new-customer-phone" placeholder="Phone" class="w-full p-2 mb-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:var(--radius-sm);">
+                <div class="flex gap-2">
+                    <button onclick="closeCustomerModal()" class="flex-1 p-2" style="background:var(--bg-elevated); border-radius:var(--radius-sm);">Cancel</button>
+                    <button onclick="saveNewCustomer()" class="flex-1 p-2" style="background:var(--primary); color:white; border-radius:var(--radius-sm);">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="expense-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h3 class="font-bold text-lg mb-4">💸 Add Daily Expense</h3>
+                <input type="text" id="expense-desc" placeholder="Description" class="w-full p-2 mb-2" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:var(--radius-sm);">
+                <input type="number" id="expense-amount" placeholder="Amount" class="w-full p-2 mb-4" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:var(--radius-sm);">
+                <div class="flex gap-2">
+                    <button onclick="closeExpenseModal()" class="flex-1 p-2" style="background:var(--bg-elevated); border-radius:var(--radius-sm);">Cancel</button>
+                    <button onclick="addExpense()" class="flex-1 p-2" style="background:var(--primary); color:white; border-radius:var(--radius-sm);">Add</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // ============================================
+        // COMPLETE MENU - 96 ITEMS WITH EMOJIS
+        // ============================================
+
+        let categories = ['⭐ Favorites', '☕ Hot Coffee', '🧊 Iced Coffee', '🧋 Milk Tea', '🍧 Frappe', '🍋 Fruit Tea', '🥛 Cream Top', '✨ Signature', '🍔 Food', '🏪 Retail'];
+        
+        let menuItems = [
+            { id: 1, name: "☕ Hot Latte", price: 4000, category: "☕ Hot Coffee", emoji: "☕", favorite: true },
+            { id: 2, name: "☕ Hot Mocha", price: 5000, category: "☕ Hot Coffee", emoji: "☕🍫", favorite: false },
+            { id: 3, name: "☕ Hot Americano", price: 3500, category: "☕ Hot Coffee", emoji: "☕💧", favorite: true },
+            { id: 4, name: "☕ Hot Cappuccino", price: 5000, category: "☕ Hot Coffee", emoji: "☕✨", favorite: false },
+            { id: 5, name: "☕ Espresso", price: 3500, category: "☕ Hot Coffee", emoji: "⚡☕", favorite: false },
+            { id: 6, name: "☕ Caramel Macchiato (Hot)", price: 5500, category: "☕ Hot Coffee", emoji: "🍬☕", favorite: true },
+            { id: 7, name: "☕ Vanilla Latte (Hot)", price: 4500, category: "☕ Hot Coffee", emoji: "🍦☕", favorite: false },
+            { id: 8, name: "🧊 Iced Latte", price: 4500, category: "🧊 Iced Coffee", emoji: "🧊☕", favorite: true },
+            { id: 9, name: "🧊 Iced Mocha", price: 5500, category: "🧊 Iced Coffee", emoji: "🧊🍫", favorite: false },
+            { id: 10, name: "🧊 Iced Americano", price: 4000, category: "🧊 Iced Coffee", emoji: "🧊💧", favorite: true },
+            { id: 11, name: "🧊 Iced Cappuccino", price: 5500, category: "🧊 Iced Coffee", emoji: "🧊✨", favorite: false },
+            { id: 12, name: "🧊 Cold Brew", price: 5000, category: "🧊 Iced Coffee", emoji: "⏳☕", favorite: false },
+            { id: 13, name: "🧊 Caramel Iced Coffee", price: 5500, category: "🧊 Iced Coffee", emoji: "🍬🧊", favorite: true },
+            { id: 14, name: "🧋 Brown Sugar Milk Tea", price: 5000, category: "🧋 Milk Tea", emoji: "🍯🧋", favorite: true },
+            { id: 15, name: "🧋 Classic Milk Tea", price: 4000, category: "🧋 Milk Tea", emoji: "🧋", favorite: true },
+            { id: 16, name: "🧋 Jasmine Milk Tea", price: 4000, category: "🧋 Milk Tea", emoji: "🌸🧋", favorite: false },
+            { id: 17, name: "🧋 Taro Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "💜🧋", favorite: true },
+            { id: 18, name: "🧋 Thai Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🇹🇭🧋", favorite: true },
+            { id: 19, name: "🧋 Matcha Milk Tea", price: 5000, category: "🧋 Milk Tea", emoji: "🍵🧋", favorite: false },
+            { id: 20, name: "🧋 Strawberry Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🍓🧋", favorite: false },
+            { id: 21, name: "🧋 Coconut Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🥥🧋", favorite: false },
+            { id: 22, name: "🧋 Oolong Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🍃🧋", favorite: false },
+            { id: 23, name: "🧋 Taiwan Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🇹🇼🧋", favorite: false },
+            { id: 24, name: "🍧 Matcha Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍵🍧", favorite: true },
+            { id: 25, name: "🍧 Strawberry Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍓🍧", favorite: true },
+            { id: 26, name: "🍧 Chocolate Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍫🍧", favorite: false },
+            { id: 27, name: "🍧 Coffee Frappe", price: 5500, category: "🍧 Frappe", emoji: "☕🍧", favorite: true },
+            { id: 28, name: "🍧 Taro Frappe", price: 5500, category: "🍧 Frappe", emoji: "💜🍧", favorite: false },
+            { id: 29, name: "🍧 Mocha Frappe", price: 6000, category: "🍧 Frappe", emoji: "🍫☕🍧", favorite: false },
+            { id: 30, name: "🍧 Caramel Frappe", price: 6000, category: "🍧 Frappe", emoji: "🍬🍧", favorite: false },
+            { id: 31, name: "🍧 Brown Sugar Frappe", price: 6000, category: "🍧 Frappe", emoji: "🍯🍧", favorite: true },
+            { id: 32, name: "🍓 Strawberry Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🍓🍋", favorite: true },
+            { id: 33, name: "🍑 Peach Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🍑🍋", favorite: true },
+            { id: 34, name: "🥭 Passion Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🥭🍋", favorite: true },
+            { id: 35, name: "🍍 Pineapple Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🍍🍋", favorite: false },
+            { id: 36, name: "🍋 Honey Lemon Tea", price: 4500, category: "🍋 Fruit Tea", emoji: "🍯🍋", favorite: true },
+            { id: 37, name: "🍹 Strawberry Soda", price: 4500, category: "🍋 Fruit Tea", emoji: "🍓🥤", favorite: true },
+            { id: 38, name: "🥛 Brown Sugar Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍯🥛", favorite: true },
+            { id: 39, name: "🥛 Strawberry Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍓🥛", favorite: true },
+            { id: 40, name: "🥛 Caramel Macchiato", price: 6000, category: "🥛 Cream Top", emoji: "🍬🥛", favorite: true },
+            { id: 41, name: "✨ Matcha Strawberry", price: 6000, category: "✨ Signature", emoji: "🍓🍵", favorite: true },
+            { id: 42, name: "✨ Coconut Matcha", price: 6500, category: "✨ Signature", emoji: "🥥🍵", favorite: true },
+            { id: 43, name: "✨ Strawberry Latte", price: 5500, category: "✨ Signature", emoji: "🍓☕", favorite: true },
+            { id: 44, name: "✨ Peach Lemon", price: 4500, category: "✨ Signature", emoji: "🍑🍋", favorite: true },
+            { id: 45, name: "🥪 Chicken Sandwich", price: 4000, category: "🍔 Food", emoji: "🥪", favorite: true },
+            { id: 46, name: "🥐 Croissant", price: 3500, category: "🍔 Food", emoji: "🥐", favorite: true },
+            { id: 47, name: "🍰 Cheesecake", price: 4500, category: "🍔 Food", emoji: "🍰", favorite: true },
+            { id: 48, name: "🍟 Fries", price: 3500, category: "🍔 Food", emoji: "🍟", favorite: true }
+        ];
+
+        // Toppings
+        const toppingsList = [
+            { id: 't1', name: '💎 Pearl', price: 500 },
+            { id: 't2', name: '🥥 Coco Jelly', price: 1000 },
+            { id: 't3', name: '🍮 Brown Jelly', price: 1000 },
+            { id: 't4', name: '🍦 Cream Sweet', price: 1000 },
+            { id: 't5', name: '🍯 Honey', price: 500 }
+        ];
+
+        // State
+        let cart = [];
+        let orders = [];
+        let kitchenQueue = [];
+        let dailyStats = { revenue: 0, orders: 0, expenses: 0 };
+        let currentCategory = '⭐ Favorites';
+        let currentOrderType = 'here';
+        let currentUser = null;
+        let selectedPaymentMethod = 'cash';
+        let dailyExpenses = [];
+        let customers = {};
+        let staffMembers = { '1234': { name: 'Admin', role: 'admin' }, '0000': { name: 'Cashier', role: 'cashier' } };
+        let revenueChart = null;
+        let tempCartItem = null;
+        let dailyOrderCounter = 1;
+        let currentDate = new Date().toDateString();
+
         // ========== DARK MODE ==========
         function initDarkMode() {
             const savedTheme = localStorage.getItem('koojiTheme') || 'light';
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark');
-            }
+            if (savedTheme === 'dark') document.body.classList.add('dark');
             updateDarkModeToggle(savedTheme);
         }
 
         function updateDarkModeToggle(theme) {
-            const options = document.querySelectorAll('.dark-toggle-option');
-            options.forEach(opt => {
-                if (opt.getAttribute('data-theme') === theme) {
-                    opt.classList.add('active');
-                } else {
-                    opt.classList.remove('active');
-                }
+            document.querySelectorAll('.dark-toggle-option').forEach(opt => {
+                if (opt.getAttribute('data-theme') === theme) opt.classList.add('active');
+                else opt.classList.remove('active');
             });
         }
 
@@ -808,23 +1096,14 @@
             const target = e.target.closest('.dark-toggle-option');
             if (target) {
                 const theme = target.getAttribute('data-theme');
-                if (theme === 'dark') {
-                    document.body.classList.add('dark');
-                    localStorage.setItem('koojiTheme', 'dark');
-                } else {
-                    document.body.classList.remove('dark');
-                    localStorage.setItem('koojiTheme', 'light');
-                }
+                if (theme === 'dark') document.body.classList.add('dark');
+                else document.body.classList.remove('dark');
+                localStorage.setItem('koojiTheme', theme);
                 updateDarkModeToggle(theme);
             }
         });
 
-        // ========== STATE ==========
-        let cart = [];
-        let currentOrderType = 'here';
-        let currentUser = null;
-
-        // ========== CART SHEET ==========
+        // ========== CART FUNCTIONS ==========
         function openCartSheet() {
             document.getElementById('cartSheet').classList.add('open');
             document.getElementById('sheetOverlay').classList.add('open');
@@ -846,27 +1125,21 @@
 
         function addToCart(item) {
             const existing = cart.find(i => i.id === item.id);
-            if (existing) {
-                existing.qty++;
-            } else {
-                cart.push({ ...item, qty: 1 });
-            }
+            if (existing) existing.qty++;
+            else cart.push({ ...item, qty: 1 });
             updateCartBadge();
             renderCartSheet();
             showToast(`Added ${item.name} to cart 🧋`);
         }
 
         function updateCartBadge() {
-            const totalItems = cart.reduce((sum, i) => sum + i.qty, 0);
-            document.getElementById('cartItemCount').innerText = totalItems;
+            const total = cart.reduce((sum, i) => sum + i.qty, 0);
+            document.getElementById('cartItemCount').innerText = total;
         }
 
         function changeQty(index, delta) {
-            if (cart[index].qty + delta <= 0) {
-                cart.splice(index, 1);
-            } else {
-                cart[index].qty += delta;
-            }
+            if (cart[index].qty + delta <= 0) cart.splice(index, 1);
+            else cart[index].qty += delta;
             updateCartBadge();
             renderCartSheet();
         }
@@ -879,10 +1152,9 @@
 
         function updateTotals() {
             const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            const discountPercent = parseInt(document.getElementById('discount-select')?.value || 0);
-            const discountAmount = Math.round(subtotal * discountPercent / 100);
+            const discount = parseInt(document.getElementById('discount-select')?.value || 0);
+            const discountAmount = Math.round(subtotal * discount / 100);
             const total = subtotal - discountAmount;
-            
             document.getElementById('cart-subtotal').innerHTML = `៛ ${subtotal.toLocaleString()}`;
             document.getElementById('cart-total').innerHTML = `៛ ${total.toLocaleString()}`;
             return { subtotal, discountAmount, total };
@@ -891,23 +1163,20 @@
         function renderCartSheet() {
             const container = document.getElementById('cart-items-list');
             if (!container) return;
-            
             if (cart.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-tertiary); font-size:0.875rem;">🛒 Cart is empty<br>Tap a drink to start</div>';
+                container.innerHTML = '<div class="text-center p-8" style="color:var(--text-tertiary);">🛒 Cart is empty<br>Tap a drink to start</div>';
                 updateTotals();
                 return;
             }
-            
             container.innerHTML = cart.map((item, idx) => `
                 <div class="cart-item">
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name} x${item.qty}</div>
-                        ${item.modifiers ? `<div class="cart-item-modifiers">${item.modifiers}</div>` : ''}
                     </div>
                     <div class="cart-item-price">៛ ${(item.price * item.qty).toLocaleString()}</div>
                     <div class="cart-item-actions">
                         <button class="qty-btn" onclick="changeQty(${idx}, -1)">-</button>
-                        <span style="min-width:20px; text-align:center; font-size:0.875rem;">${item.qty}</span>
+                        <span style="min-width:20px; text-align:center;">${item.qty}</span>
                         <button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button>
                         <button class="qty-btn" onclick="removeCartItem(${idx})" style="color:var(--danger);">🗑️</button>
                     </div>
@@ -916,183 +1185,56 @@
             updateTotals();
         }
 
-        function checkout() {
-            if (cart.length === 0) {
-                showToast("Cart is empty", "error");
-                return;
-            }
+        // ========== PAYMENT ==========
+        function openPaymentModal() {
+            if (cart.length === 0) { showToast("Cart is empty"); return; }
             const { total } = updateTotals();
-            showToast(`✅ Order placed! Total: ៛ ${total.toLocaleString()}`);
+            document.getElementById('payment-amount').innerHTML = `៛ ${total.toLocaleString()}`;
+            document.getElementById('payment-modal').classList.add('open');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.remove('open');
+        }
+
+        function getNextOrderNumber() {
+            const today = new Date().toDateString();
+            if (today !== currentDate) { currentDate = today; dailyOrderCounter = 1; }
+            return '#' + (dailyOrderCounter++).toString().padStart(3, '0');
+        }
+
+        function confirmPayment(method) {
+            const { subtotal, discountAmount, total } = updateTotals();
+            const orderId = getNextOrderNumber();
+            const customerName = document.getElementById('customer-name-input').value || 'Guest';
             
-            // Send to kitchen
-            const order = {
-                id: '#' + Math.floor(Math.random() * 1000),
-                items: [...cart],
-                total: total,
-                time: new Date(),
-                status: 'pending'
+            const newOrder = {
+                id: orderId, items: [...cart], subtotal, discountPercent: parseInt(document.getElementById('discount-select')?.value || 0),
+                discountAmount, total, status: 'pending', time: new Date(), orderType: currentOrderType,
+                paymentMethod: method, customerName
             };
-            kitchenQueue.push(order);
-            renderKitchen();
             
+            orders.push(newOrder);
+            kitchenQueue.push(newOrder);
+            dailyStats.revenue += total;
+            dailyStats.orders++;
+            updateStats();
+            
+            closePaymentModal();
             cart = [];
             updateCartBadge();
             renderCartSheet();
             closeCartSheet();
+            showToast(`✅ Order ${orderId} placed! Total: ៛ ${total.toLocaleString()}`);
             
-            // Auto-switch to kitchen after 1 second
-            setTimeout(() => {
-                switchTab('kitchen');
-            }, 1000);
+            setTimeout(() => { switchTab('kitchen'); renderKitchen(); }, 500);
         }
 
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        // ============================================
-// REORGANIZED MENU - 105 ITEMS WITH EMOJIS
-// ============================================
-
-const categories = [
-    '⭐ Favorites',
-    '☕ Hot Coffee', 
-    '🧊 Iced Coffee',
-    '🧋 Milk Tea',
-    '🍧 Frappe',
-    '🍋 Fruit Tea',
-    '🥛 Cream Top',
-    '✨ Signature',
-    '🍔 Food',
-    '🏪 Retail'
-];
-
-const menuItems = [
-    // ========== ☕ HOT COFFEE (7 items) ==========
-    { id: 1, name: "☕ Hot Latte", price: 4000, category: "☕ Hot Coffee", emoji: "☕", popular: true },
-    { id: 2, name: "☕ Hot Mocha", price: 5000, category: "☕ Hot Coffee", emoji: "☕🍫", popular: false },
-    { id: 3, name: "☕ Hot Americano", price: 3500, category: "☕ Hot Coffee", emoji: "☕💧", popular: true },
-    { id: 4, name: "☕ Hot Cappuccino", price: 5000, category: "☕ Hot Coffee", emoji: "☕✨", popular: false },
-    { id: 5, name: "☕ Espresso", price: 3500, category: "☕ Hot Coffee", emoji: "⚡☕", popular: false },
-    { id: 6, name: "☕ Caramel Macchiato (Hot)", price: 5500, category: "☕ Hot Coffee", emoji: "🍬☕", popular: true },
-    { id: 7, name: "☕ Vanilla Latte (Hot)", price: 4500, category: "☕ Hot Coffee", emoji: "🍦☕", popular: false },
-
-    // ========== 🧊 ICED COFFEE (6 items) ==========
-    { id: 8, name: "🧊 Iced Latte", price: 4500, category: "🧊 Iced Coffee", emoji: "🧊☕", popular: true },
-    { id: 9, name: "🧊 Iced Mocha", price: 5500, category: "🧊 Iced Coffee", emoji: "🧊🍫", popular: false },
-    { id: 10, name: "🧊 Iced Americano", price: 4000, category: "🧊 Iced Coffee", emoji: "🧊💧", popular: true },
-    { id: 11, name: "🧊 Iced Cappuccino", price: 5500, category: "🧊 Iced Coffee", emoji: "🧊✨", popular: false },
-    { id: 12, name: "🧊 Cold Brew", price: 5000, category: "🧊 Iced Coffee", emoji: "⏳☕", popular: false },
-    { id: 13, name: "🧊 Caramel Iced Coffee", price: 5500, category: "🧊 Iced Coffee", emoji: "🍬🧊", popular: true },
-
-    // ========== 🧋 MILK TEA (14 items) ==========
-    { id: 14, name: "🧋 Brown Sugar Milk Tea", price: 5000, category: "🧋 Milk Tea", emoji: "🍯🧋", popular: true },
-    { id: 15, name: "🧋 Classic Milk Tea", price: 4000, category: "🧋 Milk Tea", emoji: "🧋", popular: true },
-    { id: 16, name: "🧋 Jasmine Milk Tea", price: 4000, category: "🧋 Milk Tea", emoji: "🌸🧋", popular: false },
-    { id: 17, name: "🧋 Taro Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "💜🧋", popular: true },
-    { id: 18, name: "🧋 Thai Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🇹🇭🧋", popular: true },
-    { id: 19, name: "🧋 Matcha Milk Tea", price: 5000, category: "🧋 Milk Tea", emoji: "🍵🧋", popular: false },
-    { id: 20, name: "🧋 Strawberry Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🍓🧋", popular: false },
-    { id: 21, name: "🧋 Coconut Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🥥🧋", popular: false },
-    { id: 22, name: "🧋 Oolong Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🍃🧋", popular: false },
-    { id: 23, name: "🧋 Taiwan Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🇹🇼🧋", popular: false },
-    { id: 24, name: "🧋 Butterfly Pea Milk", price: 4500, category: "🧋 Milk Tea", emoji: "🦋🥛", popular: false },
-    { id: 25, name: "🧋 Pink Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🩷🧋", popular: false },
-    { id: 26, name: "🧋 Red Milk Tea", price: 4500, category: "🧋 Milk Tea", emoji: "🔴🧋", popular: false },
-    { id: 27, name: "🧋 Chocolate Milk", price: 4000, category: "🧋 Milk Tea", emoji: "🍫🥛", popular: false },
-
-    // ========== 🍧 FRAPPE (15 items) ==========
-    { id: 28, name: "🍧 Matcha Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍵🍧", popular: true },
-    { id: 29, name: "🍧 Strawberry Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍓🍧", popular: true },
-    { id: 30, name: "🍧 Chocolate Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍫🍧", popular: false },
-    { id: 31, name: "🍧 Coffee Frappe", price: 5500, category: "🍧 Frappe", emoji: "☕🍧", popular: true },
-    { id: 32, name: "🍧 Taro Frappe", price: 5500, category: "🍧 Frappe", emoji: "💜🍧", popular: false },
-    { id: 33, name: "🍧 Mocha Frappe", price: 6000, category: "🍧 Frappe", emoji: "🍫☕🍧", popular: false },
-    { id: 34, name: "🍧 Caramel Frappe", price: 6000, category: "🍧 Frappe", emoji: "🍬🍧", popular: false },
-    { id: 35, name: "🍧 Vanilla Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍦🍧", popular: false },
-    { id: 36, name: "🍧 Green Tea Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍃🍧", popular: false },
-    { id: 37, name: "🍧 Thai Tea Frappe", price: 5500, category: "🍧 Frappe", emoji: "🇹🇭🍧", popular: false },
-    { id: 38, name: "🍧 Brown Sugar Frappe", price: 6000, category: "🍧 Frappe", emoji: "🍯🍧", popular: true },
-    { id: 39, name: "🍧 Blueberry Frappe", price: 5500, category: "🍧 Frappe", emoji: "🫐🍧", popular: false },
-    { id: 40, name: "🍧 Passion Fruit Frappe", price: 5500, category: "🍧 Frappe", emoji: "🥭🍧", popular: false },
-    { id: 41, name: "🍧 Peach Frappe", price: 5500, category: "🍧 Frappe", emoji: "🍑🍧", popular: false },
-    { id: 42, name: "🍧 Coconut Frappe", price: 6000, category: "🍧 Frappe", emoji: "🥥🍧", popular: false },
-
-    // ========== 🍋 FRUIT TEA (14 items) ==========
-    { id: 43, name: "🍓 Strawberry Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🍓🍋", popular: true },
-    { id: 44, name: "🍑 Peach Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🍑🍋", popular: true },
-    { id: 45, name: "🥭 Passion Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🥭🍋", popular: true },
-    { id: 46, name: "🍍 Pineapple Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🍍🍋", popular: false },
-    { id: 47, name: "🫐 Blueberry Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🫐🍋", popular: false },
-    { id: 48, name: "🍏 Green Apple Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🍏🍋", popular: false },
-    { id: 49, name: "🥝 Kiwi Fruit Tea", price: 4000, category: "🍋 Fruit Tea", emoji: "🥝🍋", popular: false },
-    { id: 50, name: "🍋 Honey Lemon Tea", price: 4500, category: "🍋 Fruit Tea", emoji: "🍯🍋", popular: true },
-    { id: 51, name: "🌹 Rose Honey Lemon", price: 4500, category: "🍋 Fruit Tea", emoji: "🌹🍯", popular: false },
-    { id: 52, name: "🌸 Jasmine Honey Lemon", price: 4500, category: "🍋 Fruit Tea", emoji: "🌸🍯", popular: false },
-    { id: 53, name: "🍹 Strawberry Soda", price: 4500, category: "🍋 Fruit Tea", emoji: "🍓🥤", popular: true },
-    { id: 54, name: "🍹 Peach Soda", price: 4500, category: "🍋 Fruit Tea", emoji: "🍑🥤", popular: false },
-    { id: 55, name: "🍹 Passion Fruit Soda", price: 4500, category: "🍋 Fruit Tea", emoji: "🥭🥤", popular: false },
-    { id: 56, name: "🍹 Blueberry Soda", price: 4500, category: "🍋 Fruit Tea", emoji: "🫐🥤", popular: false },
-
-    // ========== 🥛 CREAM TOP (12 items) ==========
-    { id: 57, name: "🥛 Brown Sugar Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍯🥛", popular: true },
-    { id: 58, name: "🥛 Jasmine Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🌸🥛", popular: false },
-    { id: 59, name: "🥛 Oolong Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍃🥛", popular: false },
-    { id: 60, name: "🥛 Taiwan Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🇹🇼🥛", popular: false },
-    { id: 61, name: "🥛 Peach Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍑🥛", popular: false },
-    { id: 62, name: "🥛 Strawberry Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍓🥛", popular: true },
-    { id: 63, name: "🥛 Matcha Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍵🥛", popular: false },
-    { id: 64, name: "🥛 Chocolate Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🍫🥛", popular: false },
-    { id: 65, name: "🥛 Taro Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "💜🥛", popular: false },
-    { id: 66, name: "🥛 Thai Macchiato", price: 5500, category: "🥛 Cream Top", emoji: "🇹🇭🥛", popular: false },
-    { id: 67, name: "🥛 Coconut Macchiato", price: 6000, category: "🥛 Cream Top", emoji: "🥥🥛", popular: false },
-    { id: 68, name: "🥛 Caramel Macchiato", price: 6000, category: "🥛 Cream Top", emoji: "🍬🥛", popular: true },
-
-    // ========== ✨ SIGNATURE (10 items) ==========
-    { id: 69, name: "✨ Matcha Strawberry", price: 6000, category: "✨ Signature", emoji: "🍓🍵", popular: true },
-    { id: 70, name: "✨ Coconut Matcha", price: 6500, category: "✨ Signature", emoji: "🥥🍵", popular: true },
-    { id: 71, name: "✨ Coconut Latte", price: 6000, category: "✨ Signature", emoji: "🥥☕", popular: false },
-    { id: 72, name: "✨ Strawberry Latte", price: 5500, category: "✨ Signature", emoji: "🍓☕", popular: true },
-    { id: 73, name: "✨ Purple Potato Latte", price: 5500, category: "✨ Signature", emoji: "🟣☕", popular: false },
-    { id: 74, name: "✨ Coffee Coconut", price: 5500, category: "✨ Signature", emoji: "☕🥥", popular: false },
-    { id: 75, name: "✨ Fresh Passion Honey", price: 5500, category: "✨ Signature", emoji: "🥭🍯", popular: false },
-    { id: 76, name: "✨ Pineapple Passion", price: 5000, category: "✨ Signature", emoji: "🍍🥭", popular: false },
-    { id: 77, name: "✨ Peach Lemon", price: 4500, category: "✨ Signature", emoji: "🍑🍋", popular: true },
-    { id: 78, name: "✨ Jasmine Ice Tea", price: 4000, category: "✨ Signature", emoji: "🌸🧊", popular: false },
-
-    // ========== 🍔 FOOD (10 items) ==========
-    { id: 79, name: "🥪 Chicken Sandwich", price: 4000, category: "🍔 Food", emoji: "🥪", popular: true },
-    { id: 80, name: "🥐 Croissant", price: 3500, category: "🍔 Food", emoji: "🥐", popular: true },
-    { id: 81, name: "🍰 Cheesecake", price: 4500, category: "🍔 Food", emoji: "🍰", popular: true },
-    { id: 82, name: "🍪 Cookie", price: 2000, category: "🍔 Food", emoji: "🍪", popular: false },
-    { id: 83, name: "🍜 Instant Noodles", price: 3500, category: "🍔 Food", emoji: "🍜", popular: false },
-    { id: 84, name: "🥨 Pretzel", price: 3000, category: "🍔 Food", emoji: "🥨", popular: false },
-    { id: 85, name: "🍙 Rice Ball", price: 3500, category: "🍔 Food", emoji: "🍙", popular: false },
-    { id: 86, name: "🥗 Salad", price: 4500, category: "🍔 Food", emoji: "🥗", popular: false },
-    { id: 87, name: "🍟 Fries", price: 3500, category: "🍔 Food", emoji: "🍟", popular: true },
-    { id: 88, name: "🥚 Egg Tart", price: 3000, category: "🍔 Food", emoji: "🥚🥧", popular: false },
-
-    // ========== 🏪 RETAIL (8 items - separate section) ==========
-    { id: 89, name: "🍯 Pure Honey (500g)", price: 14000, category: "🏪 Retail", emoji: "🍯", popular: true },
-    { id: 90, name: "☕ Coffee Beans (500g)", price: 44000, category: "🏪 Retail", emoji: "🫘", popular: false },
-    { id: 91, name: "🍵 Matcha Powder (100g)", price: 40000, category: "🏪 Retail", emoji: "🍵", popular: false },
-    { id: 92, name: "🍃 Premium Tea Leaves", price: 33000, category: "🏪 Retail", emoji: "🍃", popular: false },
-    { id: 93, name: "🥛 Oat Milk (1L)", price: 7500, category: "🏪 Retail", emoji: "🥛", popular: true },
-    { id: 94, name: "🍓 Strawberry Jam", price: 21000, category: "🏪 Retail", emoji: "🍓", popular: false },
-    { id: 95, name: "🍬 Honey Lemon Powder", price: 19500, category: "🏪 Retail", emoji: "🍋", popular: false },
-    { id: 96, name: "🧴 Creamer (500g)", price: 14000, category: "🏪 Retail", emoji: "🧴", popular: false }
-];
-
+        // ========== MENU RENDERING ==========
         function renderCategories() {
             const container = document.getElementById('category-container');
             container.innerHTML = categories.map(cat => `
-                <div class="category-pill ${cat === currentCategory ? 'active' : ''}" onclick="filterCategory('${cat}')">
-                    ${cat}
-                </div>
+                <div class="category-pill ${cat === currentCategory ? 'active' : ''}" onclick="filterCategory('${cat}')">${cat}</div>
             `).join('');
         }
 
@@ -1105,78 +1247,307 @@ const menuItems = [
         function renderMenu() {
             const container = document.getElementById('menu-grid');
             let filtered = menuItems;
-            if (currentCategory !== 'All') {
-                if (currentCategory === '⭐ Favorites') {
-                    filtered = menuItems.filter(i => i.favorite);
-                } else {
-                    filtered = menuItems.filter(i => i.category === currentCategory.replace('⭐ ', '').replace('☕ ', '').replace('🍵 ', '').replace('🍧 ', '').replace('🥪 ', ''));
-                }
-            }
+            if (currentCategory === '⭐ Favorites') filtered = menuItems.filter(i => i.favorite);
+            else if (currentCategory !== '⭐ Favorites') filtered = menuItems.filter(i => i.category === currentCategory);
             
             container.innerHTML = filtered.map(item => `
                 <div class="menu-card" onclick="addToCart({id:${item.id}, name:'${item.name}', price:${item.price}})">
-                    <div class="card-image">${item.emoji}</div>
+                    <div class="card-image">${item.emoji || '🧋'}</div>
                     <div class="card-content">
                         <div class="card-title">${item.name}</div>
                         <div class="card-price">៛ ${item.price.toLocaleString()}</div>
                     </div>
-                    ${item.favorite ? `<div class="favorite-star">⭐</div>` : ''}
+                    ${item.favorite ? `<div class="favorite-star" onclick="event.stopPropagation(); toggleFavorite(${item.id})">⭐</div>` : ''}
                 </div>
             `).join('');
         }
 
-        // ========== KITCHEN ==========
-        let kitchenQueue = [];
+        function toggleFavorite(id) {
+            const item = menuItems.find(i => i.id === id);
+            if (item) item.favorite = !item.favorite;
+            renderMenu();
+            renderAdminStock();
+        }
 
+        // ========== KITCHEN ==========
         function renderKitchen() {
-            const pendingDiv = document.getElementById('kitchen-pending');
-            const preparingDiv = document.getElementById('kitchen-preparing');
-            const readyDiv = document.getElementById('kitchen-ready');
+            const pending = document.getElementById('kitchen-pending');
+            const preparing = document.getElementById('kitchen-preparing');
+            const ready = document.getElementById('kitchen-ready');
+            if (!pending) return;
             
-            if (!pendingDiv) return;
-            
-            let pending = kitchenQueue.filter(o => o.status === 'pending');
-            let preparing = kitchenQueue.filter(o => o.status === 'preparing');
-            let ready = kitchenQueue.filter(o => o.status === 'ready');
-            
-            pendingDiv.innerHTML = pending.map(order => `
+            pending.innerHTML = kitchenQueue.filter(o => o.status === 'pending').map(order => `
                 <div class="kitchen-order-card">
-                    <div style="font-weight:700; margin-bottom:6px;">${order.id}</div>
+                    <div style="font-weight:700;">${order.id}</div>
                     ${order.items.map(i => `<div style="font-size:0.75rem;">${i.qty}x ${i.name}</div>`).join('')}
-                    <button onclick="updateOrderStatus('${order.id}', 'preparing')" style="margin-top:8px; background:var(--primary); color:white; border:none; padding:6px 12px; border-radius:20px; font-size:0.688rem; cursor:pointer;">▶️ Start Prep</button>
+                    <button onclick="updateOrderStatus('${order.id}', 'preparing')" style="margin-top:8px; background:var(--primary); color:white; border:none; padding:6px 12px; border-radius:20px;">▶️ Start</button>
                 </div>
             `).join('');
             
-            preparingDiv.innerHTML = preparing.map(order => `
+            preparing.innerHTML = kitchenQueue.filter(o => o.status === 'preparing').map(order => `
                 <div class="kitchen-order-card">
-                    <div style="font-weight:700; margin-bottom:6px;">${order.id}</div>
+                    <div style="font-weight:700;">${order.id}</div>
                     ${order.items.map(i => `<div style="font-size:0.75rem;">${i.qty}x ${i.name}</div>`).join('')}
-                    <button onclick="updateOrderStatus('${order.id}', 'ready')" style="margin-top:8px; background:var(--accent); color:white; border:none; padding:6px 12px; border-radius:20px; font-size:0.688rem; cursor:pointer;">✅ Mark Ready</button>
+                    <button onclick="updateOrderStatus('${order.id}', 'ready')" style="margin-top:8px; background:var(--accent); color:white; border:none; padding:6px 12px; border-radius:20px;">✅ Ready</button>
                 </div>
             `).join('');
             
-            readyDiv.innerHTML = ready.map(order => `
+            ready.innerHTML = kitchenQueue.filter(o => o.status === 'ready').map(order => `
                 <div class="kitchen-order-card">
-                    <div style="font-weight:700; margin-bottom:6px;">${order.id}</div>
+                    <div style="font-weight:700;">${order.id}</div>
                     ${order.items.map(i => `<div style="font-size:0.75rem;">${i.qty}x ${i.name}</div>`).join('')}
-                    <button onclick="updateOrderStatus('${order.id}', 'complete')" style="margin-top:8px; background:var(--success); color:white; border:none; padding:6px 12px; border-radius:20px; font-size:0.688rem; cursor:pointer;">🏁 Complete</button>
+                    <button onclick="updateOrderStatus('${order.id}', 'complete')" style="margin-top:8px; background:var(--success); color:white; border:none; padding:6px 12px; border-radius:20px;">🏁 Complete</button>
                 </div>
             `).join('');
             
-            document.getElementById('count-pending').innerText = pending.length;
-            document.getElementById('count-preparing').innerText = preparing.length;
-            document.getElementById('count-ready').innerText = ready.length;
+            document.getElementById('count-pending').innerText = kitchenQueue.filter(o => o.status === 'pending').length;
+            document.getElementById('count-preparing').innerText = kitchenQueue.filter(o => o.status === 'preparing').length;
+            document.getElementById('count-ready').innerText = kitchenQueue.filter(o => o.status === 'ready').length;
         }
 
         function updateOrderStatus(id, newStatus) {
             const order = kitchenQueue.find(o => o.id === id);
             if (order) {
-                if (newStatus === 'complete') {
-                    kitchenQueue = kitchenQueue.filter(o => o.id !== id);
-                } else {
-                    order.status = newStatus;
-                }
+                if (newStatus === 'complete') kitchenQueue = kitchenQueue.filter(o => o.id !== id);
+                else order.status = newStatus;
                 renderKitchen();
+            }
+        }
+
+        // ========== ADMIN FUNCTIONS ==========
+        function renderAdminStock() {
+            const tbody = document.getElementById('admin-stock-table');
+            if (!tbody) return;
+            tbody.innerHTML = menuItems.map(item => `
+                <tr style="border-bottom:1px solid var(--border-light);">
+                    <td class="p-2">${item.name}</td>
+                    <td class="p-2">៛ ${item.price}</td>
+                    <td class="p-2"><button onclick="toggleFavorite(${item.id})">${item.favorite ? '⭐' : '☆'}</button></td>
+                    <td class="p-2"><button onclick="deleteItem(${item.id})" style="color:var(--danger);">Delete</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteItem(id) {
+            if (confirm('Delete this item?')) {
+                menuItems = menuItems.filter(i => i.id !== id);
+                renderMenu();
+                renderAdminStock();
+            }
+        }
+
+        function openItemModal() { document.getElementById('item-modal').classList.add('open'); }
+        function closeItemModal() { document.getElementById('item-modal').classList.remove('open'); }
+        function openCategoryModal() { document.getElementById('category-modal').classList.add('open'); }
+        function closeCategoryModal() { document.getElementById('category-modal').classList.remove('open'); }
+        function openStaffModal() { renderStaffList(); document.getElementById('staff-modal').classList.add('open'); }
+        function closeStaffModal() { document.getElementById('staff-modal').classList.remove('open'); }
+        function openAddCustomerModal() { document.getElementById('customer-modal').classList.add('open'); }
+        function closeCustomerModal() { document.getElementById('customer-modal').classList.remove('open'); }
+        function openExpenseModal() { document.getElementById('expense-modal').classList.add('open'); }
+        function closeExpenseModal() { document.getElementById('expense-modal').classList.remove('open'); }
+
+        function saveNewItem() {
+            const name = document.getElementById('item-name').value;
+            const cat = document.getElementById('item-category').value;
+            const price = parseInt(document.getElementById('item-price').value);
+            if (name && price) {
+                const newId = Math.max(...menuItems.map(m => m.id), 0) + 1;
+                menuItems.push({ id: newId, name, category: cat, price, emoji: '🧋', favorite: false });
+                renderMenu();
+                renderAdminStock();
+                closeItemModal();
+                document.getElementById('item-name').value = '';
+                document.getElementById('item-price').value = '';
+            }
+        }
+
+        function saveNewCategory() {
+            const name = document.getElementById('category-name').value.trim();
+            if (name && !categories.includes(name)) {
+                categories.push(name);
+                renderCategories();
+                closeCategoryModal();
+                document.getElementById('category-name').value = '';
+            }
+        }
+
+        function renderStaffList() {
+            const container = document.getElementById('staff-list');
+            container.innerHTML = Object.entries(staffMembers).map(([pin, staff]) => `
+                <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--border-light);">
+                    <div><strong>${staff.name}</strong> (${staff.role})<br><small>PIN: ${pin}</small></div>
+                    ${pin !== '1234' ? `<button onclick="deleteStaff('${pin}')" style="color:var(--danger);">Delete</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function addStaffMember() {
+            const name = document.getElementById('new-staff-name').value;
+            const pin = document.getElementById('new-staff-pin').value;
+            const role = document.getElementById('new-staff-role').value;
+            if (name && pin.length === 4 && !staffMembers[pin]) {
+                staffMembers[pin] = { name, role };
+                renderStaffList();
+                document.getElementById('new-staff-name').value = '';
+                document.getElementById('new-staff-pin').value = '';
+            } else alert('Invalid staff data');
+        }
+
+        function deleteStaff(pin) {
+            if (confirm('Delete staff?')) delete staffMembers[pin];
+            renderStaffList();
+        }
+
+        function saveNewCustomer() {
+            const name = document.getElementById('new-customer-name').value;
+            const phone = document.getElementById('new-customer-phone').value;
+            if (name) {
+                customers[name] = { name, phone };
+                showToast(`Customer ${name} added`);
+                closeCustomerModal();
+            }
+        }
+
+        function addExpense() {
+            const desc = document.getElementById('expense-desc').value;
+            const amount = parseInt(document.getElementById('expense-amount').value);
+            if (desc && amount) {
+                dailyExpenses.push({ description: desc, amount });
+                dailyStats.expenses += amount;
+                updateStats();
+                closeExpenseModal();
+                document.getElementById('expense-desc').value = '';
+                document.getElementById('expense-amount').value = '';
+                showToast(`Expense added: ${desc} - ៛${amount}`);
+            }
+        }
+
+        function backupData() {
+            const data = { menuItems, orders, dailyStats, staffMembers };
+            localStorage.setItem('koojiBackup', JSON.stringify(data));
+            showToast('Backup saved!');
+        }
+
+        function restoreData() {
+            const data = JSON.parse(localStorage.getItem('koojiBackup'));
+            if (data) {
+                menuItems = data.menuItems;
+                orders = data.orders;
+                dailyStats = data.dailyStats;
+                staffMembers = data.staffMembers;
+                renderMenu();
+                updateStats();
+                showToast('Restored from backup!');
+            } else alert('No backup found');
+        }
+
+        function triggerExport() {
+            let csv = "Order ID,Date,Total\n";
+            orders.forEach(o => csv += `${o.id},${o.time},${o.total}\n`);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `orders_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+
+        function closeSale() {
+            if (confirm('Close sale for today?')) {
+                dailyStats = { revenue: 0, orders: 0, expenses: 0 };
+                orders = [];
+                kitchenQueue = [];
+                updateStats();
+                showToast('Sale closed for today');
+            }
+        }
+
+        function factoryReset() {
+            if (confirm('⚠️ FACTORY RESET will delete ALL data. Continue?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // ========== REPORTS ==========
+        function generateDailyReport() {
+            showToast(`📊 Daily Report: ៛${dailyStats.revenue} revenue, ${dailyStats.orders} orders`);
+        }
+
+        function exportDailyRecords() {
+            let csv = "Date,Revenue,Orders,Expenses\n";
+            csv += `${new Date().toISOString().slice(0,10)},${dailyStats.revenue},${dailyStats.orders},${dailyStats.expenses}`;
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `daily_report_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+
+        let panicMode = false;
+        function togglePanicMode() {
+            panicMode = !panicMode;
+            const btn = document.getElementById('panic-btn');
+            const numbers = document.querySelectorAll('.stat-mini span, #cart-subtotal, #cart-total');
+            numbers.forEach(el => el.style.filter = panicMode ? 'blur(5px)' : 'none');
+            btn.innerHTML = panicMode ? '👀 Show Numbers' : '🚨 Hide Numbers';
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('revenueChart')?.getContext('2d');
+            if (ctx) {
+                revenueChart = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], datasets: [{ label: 'Revenue', data: [0,0,0,0,0,0,0], borderColor: '#2d6a4f', tension: 0.3 }] }
+                });
+            }
+        }
+
+        // ========== LOGIN ==========
+        function showLoginModal() { document.getElementById('login-modal').classList.add('open'); }
+        function closeLoginModal() { document.getElementById('login-modal').classList.remove('open'); }
+        
+        let pinBuffer = '';
+        function addPinDigit(d) { 
+            const input = document.getElementById('login-pin');
+            if (input.value.length < 4) input.value += d;
+            if (input.value.length === 4) submitLogin();
+        }
+        function clearPin() { document.getElementById('login-pin').value = ''; }
+        
+        function submitLogin() {
+            const pin = document.getElementById('login-pin').value;
+            if (staffMembers[pin]) {
+                currentUser = staffMembers[pin];
+                updateUIForUser();
+                closeLoginModal();
+                document.getElementById('login-pin').value = '';
+                showToast(`Welcome ${currentUser.name}!`);
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+                document.getElementById('login-pin').value = '';
+            }
+        }
+
+        function logout() { currentUser = null; updateUIForUser(); showToast('Logged out'); }
+
+        function updateUIForUser() {
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const adminNav = document.querySelector('[onclick="switchTab(\'admin\')"]');
+            const reportsNav = document.querySelector('[onclick="switchTab(\'reports\')"]');
+            if (currentUser) {
+                loginBtn.innerHTML = `👤 ${currentUser.name}`;
+                logoutBtn.style.display = 'inline-flex';
+                if (currentUser.role !== 'admin') {
+                    if (adminNav) adminNav.style.display = 'none';
+                    if (reportsNav) reportsNav.style.display = 'none';
+                }
+            } else {
+                loginBtn.innerHTML = '🔐 Login';
+                logoutBtn.style.display = 'none';
+                if (adminNav) adminNav.style.display = 'inline-flex';
+                if (reportsNav) reportsNav.style.display = 'inline-flex';
             }
         }
 
@@ -1185,33 +1556,39 @@ const menuItems = [
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
             if (tabId === 'kitchen') renderKitchen();
+            if (tabId === 'reports') initChart();
         }
 
-        function showLoginModal() { 
-            alert("🔐 Login: Use PIN 1234 for Admin, 0000 for Cashier");
-        }
-        
-        function logout() { 
-            currentUser = null;
-            alert("Logged out");
-        }
-
-        // ========== UPDATE STATS ==========
+        // ========== STATS ==========
         function updateStats() {
-            document.getElementById('stat-revenue').innerText = '1.28M';
-            document.getElementById('stat-orders').innerText = '47';
-            document.getElementById('stat-avg').innerText = '27.3K';
-            document.getElementById('stat-points').innerText = '2.4K';
+            document.getElementById('stat-revenue').innerText = dailyStats.revenue.toLocaleString();
+            document.getElementById('stat-orders').innerText = dailyStats.orders;
+            const avg = dailyStats.orders > 0 ? Math.round(dailyStats.revenue / dailyStats.orders) : 0;
+            document.getElementById('stat-avg').innerText = avg.toLocaleString();
+            document.getElementById('stat-expense').innerText = dailyStats.expenses.toLocaleString();
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         // ========== INIT ==========
         document.addEventListener('DOMContentLoaded', () => {
-            initDarkMode();
+            document.getElementById('store-id').innerText = 'KH-' + Math.floor(Math.random() * 10000);
+            const catSelect = document.getElementById('item-category');
+            if (catSelect) catSelect.innerHTML = categories.filter(c => c !== '⭐ Favorites').map(c => `<option>${c}</option>`).join('');
             renderCategories();
             renderMenu();
+            renderAdminStock();
             updateStats();
             setOrderType('here');
             updateCartBadge();
+            initDarkMode();
+            initChart();
         });
     </script>
 </body>

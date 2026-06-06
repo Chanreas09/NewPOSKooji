@@ -567,6 +567,104 @@
         .mb-4 { margin-bottom: 16px; }
         .mt-3 { margin-top: 12px; }
         .gap-2 { gap: 8px; }
+
+             /* ========== KITCHEN TIMER PULSE & ANIMATIONS ========== */
+        
+        /* Pulse animation for long-waiting orders */
+        @keyframes pulse {
+            0% { 
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.7;
+                transform: scale(1.02);
+                background: #ffe5e7;
+                box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.3);
+            }
+            100% { 
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        /* Apply pulse to orders waiting over 10 minutes */
+        .kitchen-order-card.pulsing {
+            animation: pulse 1.5s ease-in-out infinite;
+            border-left: 3px solid var(--danger);
+        }
+        
+        /* Kitchen action button hover effect */
+        .kitchen-action-btn {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .kitchen-action-btn:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .kitchen-action-btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* Timer warning colors */
+        .timer-warning {
+            background: #fff3e0 !important;
+            color: #e76f51 !important;
+        }
+        
+        .timer-danger {
+            background: #ffe5e7 !important;
+            color: #e63946 !important;
+            font-weight: bold !important;
+            animation: subtlePulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes subtlePulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; background: #ffcdd2; }
+            100% { opacity: 1; }
+        }
+        
+        /* New order badge animation */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        
+        .new-order-badge {
+            animation: bounce 0.5s ease-in-out 3;
+        }
+        
+        /* Dark mode support for timer colors */
+        body.dark .timer-warning {
+            background: #2d2a1f !important;
+            color: #f4a261 !important;
+        }
+        
+        body.dark .timer-danger {
+            background: #3d1f24 !important;
+            color: #ff6b6b !important;
+        }
+        
+        /* Smooth scroll for kitchen orders */
+        .kitchen-orders {
+            scroll-behavior: smooth;
+        }
+        
+        /* New order highlight flash */
+        @keyframes flashHighlight {
+            0% { background: transparent; border-left-color: transparent; }
+            30% { background: #d8f3dc; border-left-color: var(--primary); }
+            100% { background: transparent; border-left-color: transparent; }
+        }
+        
+        .kitchen-order-card.highlight {
+            animation: flashHighlight 1.5s ease-out;
+        }   
     </style>
 </head>
 <body>
@@ -579,17 +677,18 @@
                     <p>Store ID: <span id="store-id">KH-8821</span> | Admin Control</p>
                 </div>
             </div>
-            <div class="header-actions">
-                <div class="dark-toggle" id="darkModeToggle">
-                    <div class="dark-toggle-option" data-theme="light">☀️ Light</div>
-                    <div class="dark-toggle-option" data-theme="dark">🌙 Dark</div>
-                </div>
-                <button onclick="switchTab('kitchen')" class="category-pill" style="margin:0; padding:6px 16px;">👨‍🍳 Kitchen</button>
-                <button onclick="switchTab('admin')" class="category-pill" style="margin:0; padding:6px 16px;" id="admin-tab-btn">👑 Admin</button>
-                <button onclick="switchTab('reports')" class="category-pill" style="margin:0; padding:6px 16px;">📊 Reports</button>
-                <button onclick="showLoginModal()" class="category-pill" style="margin:0; background:var(--primary); color:white;" id="login-btn">🔐 Login</button>
-                <button onclick="logout()" class="category-pill" style="display:none; background:var(--danger); color:white;" id="logout-btn">🚪 Logout</button>
-            </div>
+<div class="header-actions">
+    <div class="dark-toggle" id="darkModeToggle">
+        <div class="dark-toggle-option" data-theme="light">☀️ Light</div>
+        <div class="dark-toggle-option" data-theme="dark">🌙 Dark</div>
+    </div>
+    <button onclick="switchTab('pos')" class="category-pill" style="margin:0; padding:6px 16px; background:var(--primary); color:white;">🛒 POS</button>
+    <button onclick="switchTab('kitchen')" class="category-pill" style="margin:0; padding:6px 16px;">👨‍🍳 Kitchen</button>
+    <button onclick="switchTab('admin')" class="category-pill" style="margin:0; padding:6px 16px;" id="admin-tab-btn">👑 Admin</button>
+    <button onclick="switchTab('reports')" class="category-pill" style="margin:0; padding:6px 16px;">📊 Reports</button>
+    <button onclick="showLoginModal()" class="category-pill" style="margin:0; background:var(--primary); color:white;" id="login-btn">🔐 Login</button>
+    <button onclick="logout()" class="category-pill" style="display:none; background:var(--danger); color:white;" id="logout-btn">🚪 Logout</button>
+</div>
         </header>
 
         <div class="flex-1 overflow-hidden">
@@ -1182,6 +1281,82 @@
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
+                // ========== SOUND NOTIFICATION ==========
+        let audioContext = null;
+        let lastOrderCount = 0;
+        
+        function playNewOrderSound() {
+            try {
+                // Create a simple beep using Web Audio API (no external files needed)
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                // Resume audio context if suspended (browser policy)
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                const now = audioContext.currentTime;
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 880; // A5 note
+                gainNode.gain.value = 0.3;
+                
+                oscillator.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, now + 0.5);
+                oscillator.stop(now + 0.5);
+                
+                // Second beep
+                setTimeout(() => {
+                    const osc2 = audioContext.createOscillator();
+                    const gain2 = audioContext.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioContext.destination);
+                    osc2.frequency.value = 660; // E5 note
+                    gain2.gain.value = 0.3;
+                    osc2.start();
+                    gain2.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.3);
+                    osc2.stop(audioContext.currentTime + 0.3);
+                }, 200);
+                
+                console.log('🔔 New order sound played');
+            } catch (error) {
+                console.log('Sound notification not supported:', error);
+            }
+        }
+        
+        // Check for new orders and play sound
+        function checkAndNotifyNewOrders() {
+            const currentOrderCount = kitchenQueue.length;
+            if (currentOrderCount > lastOrderCount && lastOrderCount > 0) {
+                // New order added! Play sound
+                playNewOrderSound();
+                
+                // Also show visual notification
+                const notification = document.createElement('div');
+                notification.className = 'toast';
+                notification.style.background = 'var(--primary)';
+                notification.style.color = 'white';
+                notification.style.borderLeftColor = 'var(--accent)';
+                notification.innerHTML = `🔔 NEW ORDER! ${currentOrderCount - lastOrderCount} new order(s) received`;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 4000);
+            }
+            lastOrderCount = currentOrderCount;
+        }
+        
+        // Modified updateOrderStatus to include notification check
+        const originalUpdateOrderStatus = updateOrderStatus;
+        window.updateOrderStatus = function(id, newStatus) {
+            originalUpdateOrderStatus(id, newStatus);
+            // Re-render kitchen after status change
+            renderKitchen();
+        };
                 // ========== DAILY RESET SYSTEM ==========
         
         // Get today's date as YYYY-MM-DD
@@ -1766,6 +1941,8 @@
             
             orders.push(newOrder);
             kitchenQueue.push(newOrder);
+            // Play sound notification for new order
+            playNewOrderSound();
             dailyStats.revenue += total;
             dailyStats.orders++;
             updateStats();
@@ -2042,33 +2219,159 @@ function deleteItem(id) {
             const ready = document.getElementById('kitchen-ready');
             if (!pending) return;
             
+            // Update timers for all orders
+            updateOrderTimers();
+            
             pending.innerHTML = kitchenQueue.filter(o => o.status === 'pending').map(order => `
-                <div class="kitchen-order-card">
-                    <div style="font-weight:700;">${order.id}</div>
-                    ${order.items.map(i => `<div style="font-size:0.75rem;">${i.qty}x ${i.name}</div>`).join('')}
-                    <button onclick="updateOrderStatus('${order.id}', 'preparing')" style="margin-top:8px; background:var(--primary); color:white; border:none; padding:6px 12px; border-radius:20px;">▶️ Start</button>
+                <div class="kitchen-order-card" data-order-id="${order.id}" data-order-time="${new Date(order.time).getTime()}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div style="font-weight:700; font-size:1rem;">${order.id}</div>
+                        <div style="font-size:0.7rem; background: var(--warning-soft); padding: 4px 8px; border-radius: 20px;" class="timer-${order.id.replace('#', '')}">
+                            ⏱️ <span class="wait-time">Just now</span>
+                        </div>
+                    </div>
+                    <div style="font-size:0.7rem; color: var(--text-tertiary); margin-bottom: 6px;">
+                        🕐 ${new Date(order.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                    </div>
+                    ${order.customerName && order.customerName !== 'Guest' ? `<div style="font-size:0.7rem; margin-bottom: 6px;">👤 ${order.customerName}</div>` : ''}
+                    <div style="border-top: 1px solid var(--border-light); margin: 6px 0; padding-top: 6px;">
+                        ${order.items.map(i => `
+                            <div style="font-size:0.75rem; margin-bottom: 6px;">
+                                <strong>${i.qty}x ${i.name}</strong>
+                                ${i.customization ? `<div style="font-size:0.65rem; color: var(--primary); margin-left: 12px;">✨ ${i.customization}</div>` : ''}
+                                ${i.toppingsList && i.toppingsList.length ? `<div style="font-size:0.65rem; color: var(--accent); margin-left: 12px;">➕ ${i.toppingsList.map(t => t.name).join(', ')}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border-light);">
+                        <div style="font-size:0.75rem; font-weight:700; color: var(--primary);">💵 ${order.total.toLocaleString()}៛</div>
+                        <button onclick="updateOrderStatus('${order.id}', '${order.status === 'pending' ? 'preparing' : (order.status === 'preparing' ? 'ready' : 'complete')}')" 
+                            class="kitchen-action-btn" 
+                            style="background: ${order.status === 'pending' ? 'var(--primary)' : (order.status === 'preparing' ? 'var(--accent)' : 'var(--success)')}; color:white; border:none; padding:6px 16px; border-radius:20px; cursor:pointer;">
+                            ${order.status === 'pending' ? '▶️ Start' : (order.status === 'preparing' ? '✅ Ready' : '🏁 Complete')}
+                        </button>
+                    </div>
                 </div>
             `).join('');
             
             preparing.innerHTML = kitchenQueue.filter(o => o.status === 'preparing').map(order => `
-                <div class="kitchen-order-card">
-                    <div style="font-weight:700;">${order.id}</div>
-                    ${order.items.map(i => `<div style="font-size:0.75rem;">${i.qty}x ${i.name}</div>`).join('')}
-                    <button onclick="updateOrderStatus('${order.id}', 'ready')" style="margin-top:8px; background:var(--accent); color:white; border:none; padding:6px 12px; border-radius:20px;">✅ Ready</button>
+                <div class="kitchen-order-card" data-order-id="${order.id}" data-order-time="${new Date(order.time).getTime()}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div style="font-weight:700; font-size:1rem;">${order.id}</div>
+                        <div style="font-size:0.7rem; background: var(--warning-soft); padding: 4px 8px; border-radius: 20px;" class="timer-${order.id.replace('#', '')}">
+                            ⏱️ <span class="wait-time">Just now</span>
+                        </div>
+                    </div>
+                    <div style="font-size:0.7rem; color: var(--text-tertiary); margin-bottom: 6px;">
+                        🕐 ${new Date(order.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                    </div>
+                    ${order.customerName && order.customerName !== 'Guest' ? `<div style="font-size:0.7rem; margin-bottom: 6px;">👤 ${order.customerName}</div>` : ''}
+                    <div style="border-top: 1px solid var(--border-light); margin: 6px 0; padding-top: 6px;">
+                        ${order.items.map(i => `
+                            <div style="font-size:0.75rem; margin-bottom: 6px;">
+                                <strong>${i.qty}x ${i.name}</strong>
+                                ${i.customization ? `<div style="font-size:0.65rem; color: var(--primary); margin-left: 12px;">✨ ${i.customization}</div>` : ''}
+                                ${i.toppingsList && i.toppingsList.length ? `<div style="font-size:0.65rem; color: var(--accent); margin-left: 12px;">➕ ${i.toppingsList.map(t => t.name).join(', ')}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border-light);">
+                        <div style="font-size:0.75rem; font-weight:700; color: var(--primary);">💵 ${order.total.toLocaleString()}៛</div>
+                        <button onclick="updateOrderStatus('${order.id}', 'ready')" 
+                            class="kitchen-action-btn" 
+                            style="background: var(--accent); color:white; border:none; padding:6px 16px; border-radius:20px; cursor:pointer;">
+                            ✅ Ready
+                        </button>
+                    </div>
                 </div>
             `).join('');
             
             ready.innerHTML = kitchenQueue.filter(o => o.status === 'ready').map(order => `
-                <div class="kitchen-order-card">
-                    <div style="font-weight:700;">${order.id}</div>
-                    ${order.items.map(i => `<div style="font-size:0.75rem;">${i.qty}x ${i.name}</div>`).join('')}
-                    <button onclick="updateOrderStatus('${order.id}', 'complete')" style="margin-top:8px; background:var(--success); color:white; border:none; padding:6px 12px; border-radius:20px;">🏁 Complete</button>
+                <div class="kitchen-order-card" data-order-id="${order.id}" data-order-time="${new Date(order.time).getTime()}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div style="font-weight:700; font-size:1rem;">${order.id}</div>
+                        <div style="font-size:0.7rem; background: var(--success-soft); padding: 4px 8px; border-radius: 20px;" class="timer-${order.id.replace('#', '')}">
+                            ✅ Ready
+                        </div>
+                    </div>
+                    <div style="font-size:0.7rem; color: var(--text-tertiary); margin-bottom: 6px;">
+                        🕐 ${new Date(order.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                    </div>
+                    ${order.customerName && order.customerName !== 'Guest' ? `<div style="font-size:0.7rem; margin-bottom: 6px;">👤 ${order.customerName}</div>` : ''}
+                    <div style="border-top: 1px solid var(--border-light); margin: 6px 0; padding-top: 6px;">
+                        ${order.items.map(i => `
+                            <div style="font-size:0.75rem; margin-bottom: 6px;">
+                                <strong>${i.qty}x ${i.name}</strong>
+                                ${i.customization ? `<div style="font-size:0.65rem; color: var(--primary); margin-left: 12px;">✨ ${i.customization}</div>` : ''}
+                                ${i.toppingsList && i.toppingsList.length ? `<div style="font-size:0.65rem; color: var(--accent); margin-left: 12px;">➕ ${i.toppingsList.map(t => t.name).join(', ')}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border-light);">
+                        <div style="font-size:0.75rem; font-weight:700; color: var(--primary);">💵 ${order.total.toLocaleString()}៛</div>
+                        <button onclick="updateOrderStatus('${order.id}', 'complete')" 
+                            class="kitchen-action-btn" 
+                            style="background: var(--success); color:white; border:none; padding:6px 16px; border-radius:20px; cursor:pointer;">
+                            🏁 Complete
+                        </button>
+                    </div>
                 </div>
             `).join('');
             
             document.getElementById('count-pending').innerText = kitchenQueue.filter(o => o.status === 'pending').length;
             document.getElementById('count-preparing').innerText = kitchenQueue.filter(o => o.status === 'preparing').length;
             document.getElementById('count-ready').innerText = kitchenQueue.filter(o => o.status === 'ready').length;
+            
+            // Start timer interval if not already running
+            if (!window.timerInterval) {
+                startTimerInterval();
+            }
+        }
+        
+        // Update wait timers for all orders
+        function updateOrderTimers() {
+            const now = new Date();
+            document.querySelectorAll('.kitchen-order-card').forEach(card => {
+                const orderIdAttr = card.getAttribute('data-order-id');
+                if (orderIdAttr) {
+                    const orderTime = parseInt(card.getAttribute('data-order-time'));
+                    if (orderTime) {
+                        const waitMinutes = Math.floor((now.getTime() - orderTime) / 60000);
+                        const timerSpan = card.querySelector('.wait-time');
+                        if (timerSpan) {
+                            if (waitMinutes < 1) {
+                                timerSpan.innerText = 'Just now';
+                                timerSpan.style.color = '#2d6a4f';
+                            } else if (waitMinutes < 5) {
+                                timerSpan.innerText = `${waitMinutes} min`;
+                                timerSpan.style.color = '#e76f51';
+                            } else if (waitMinutes < 10) {
+                                timerSpan.innerText = `${waitMinutes} min`;
+                                timerSpan.style.color = '#e63946';
+                                timerSpan.style.fontWeight = 'bold';
+                            } else {
+                                timerSpan.innerText = `${waitMinutes}+ min`;
+                                timerSpan.style.color = '#e63946';
+                                timerSpan.style.fontWeight = 'bold';
+                                timerSpan.style.animation = 'pulse 1s infinite';
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Start timer interval that updates every minute
+        let timerInterval = null;
+        function startTimerInterval() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                // Only update if kitchen view is visible
+                const kitchenView = document.getElementById('view-kitchen');
+                if (kitchenView && !kitchenView.classList.contains('hidden')) {
+                    updateOrderTimers();
+                }
+            }, 60000); // Update every minute
         }
 
         function updateOrderStatus(id, newStatus) {

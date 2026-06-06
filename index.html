@@ -2081,6 +2081,17 @@ function deleteItem(id) {
         switchTab('pos');  // ← ADD THIS LINE
     }
 }
+        // Toggle favorite star
+        function toggleFavorite(id) {
+            const item = menuItems.find(i => i.id === id);
+            if (item) {
+                item.favorite = !item.favorite;
+                renderMenu();           // Refresh POS menu
+                renderAdminItemsTable(); // Refresh admin table
+                saveToLocalStorage();    // Save changes
+                showToast(item.favorite ? `⭐ ${item.name} added to favorites` : `☆ ${item.name} removed from favorites`);
+            }
+        }
         function closeItemModal() { document.getElementById('item-modal').classList.remove('open'); }
 
         function openCategoryModal() {

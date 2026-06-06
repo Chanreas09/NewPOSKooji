@@ -668,6 +668,65 @@
         .kitchen-order-card.highlight {
             animation: flashHighlight 1.5s ease-out;
         }   
+
+            /* ========== LOGIN PIN BUTTONS ========== */
+        .pin-btn {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-width: 80px;
+            margin: 0 auto;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+        
+        .pin-btn:active {
+            transform: scale(0.94);
+            background: var(--primary-soft);
+        }
+        
+        .pin-btn-clear {
+            background: var(--danger-soft);
+            color: var(--danger);
+            font-size: 1rem;
+        }
+        
+        .pin-btn-clear:active {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .pin-btn-enter {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .pin-btn-enter:active {
+            background: var(--primary-dark);
+            transform: scale(0.94);
+        }
+        
+        /* PIN dot animation */
+        @keyframes dotPop {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .pin-dot-filled {
+            animation: dotPop 0.2s ease-out;
+            border-color: var(--primary) !important;
+            background: var(--primary-soft) !important;
+            color: var(--primary) !important;
+        }    
     </style>
 </head>
 <body>
@@ -750,6 +809,7 @@
                     <div class="admin-card" onclick="openStaffModal()">👥 Staff Mgmt</div>
                     <div class="admin-card" onclick="testTelegramConnection()" style="background:var(--primary-soft);">📱 Test Telegram</div>
                     <div class="admin-card" onclick="factoryReset()" style="background:var(--danger-soft); color:var(--danger);">🗑️ Factory Reset</div>
+                    <div class="admin-card" onclick="clearAllMenuItems()" style="background:var(--danger-soft); color:var(--danger);">🗑️ Clear All Menu</div>
                 </div>
 
                 <div style="background:var(--bg-elevated); border-radius:var(--radius-lg); padding:20px;">
@@ -816,26 +876,73 @@
 
         <!-- MODALS -->
         <div id="payment-modal" class="modal-overlay">
-            <div class="modal-content"><h3 class="font-bold mb-4">💳 Payment</h3><div class="text-center mb-4"><span id="payment-amount" class="font-bold">៛ 0</span></div>
-            <div class="gap-2 flex flex-col"><button onclick="confirmPayment('cash')" class="pay-btn" style="background:var(--success);">💵 Cash</button><button onclick="confirmPayment('bank')" class="pay-btn" style="background:var(--accent);">🏦 Bank Transfer</button></div>
-            <button onclick="closePaymentModal()" class="w-full mt-3 p-2" style="background:var(--bg-elevated); border-radius:var(--radius-md);">Cancel</button></div>
-        </div>
-
-        <div id="login-modal" class="modal-overlay">
-            <div class="modal-content text-center"><div class="text-4xl mb-2">👤</div><h3 class="font-bold">Staff Login</h3><p class="mb-4" style="color:var(--text-tertiary);">Demo: 1234 (Admin) / 0000 (Cashier)</p>
-            <input type="password" id="login-pin" maxlength="4" class="w-full p-3 text-center text-2xl font-bold" style="background:var(--bg-elevated); border:1px solid var(--border-light); border-radius:var(--radius-md); margin-bottom:16px;" placeholder="****">
-            <div id="login-error" class="hidden" style="color:var(--danger); margin-bottom:8px;">Invalid PIN</div>
-            <div class="grid grid-cols-3 gap-2 mb-4">
-                <button onclick="addPinDigit('1')" class="p-3 rounded" style="background:var(--bg-elevated);">1</button><button onclick="addPinDigit('2')" class="p-3 rounded" style="background:var(--bg-elevated);">2</button>
-                <button onclick="addPinDigit('3')" class="p-3 rounded" style="background:var(--bg-elevated);">3</button><button onclick="addPinDigit('4')" class="p-3 rounded" style="background:var(--bg-elevated);">4</button>
-                <button onclick="addPinDigit('5')" class="p-3 rounded" style="background:var(--bg-elevated);">5</button><button onclick="addPinDigit('6')" class="p-3 rounded" style="background:var(--bg-elevated);">6</button>
-                <button onclick="addPinDigit('7')" class="p-3 rounded" style="background:var(--bg-elevated);">7</button><button onclick="addPinDigit('8')" class="p-3 rounded" style="background:var(--bg-elevated);">8</button>
-                <button onclick="addPinDigit('9')" class="p-3 rounded" style="background:var(--bg-elevated);">9</button><button onclick="clearPin()" class="p-3 rounded" style="background:var(--danger-soft);">C</button>
-                <button onclick="addPinDigit('0')" class="p-3 rounded" style="background:var(--bg-elevated);">0</button><button onclick="submitLogin()" class="p-3 rounded" style="background:var(--primary); color:white;">→</button>
+            <div class="modal-content" style="max-width: 400px;">
+                <h3 class="font-bold text-xl mb-4 text-center">💳 Payment</h3>
+                <div class="text-center mb-6">
+                    <span class="text-3xl font-bold text-primary" id="payment-amount">៛ 0</span>
+                </div>
+                <div class="flex flex-col gap-3 mb-4">
+                    <button onclick="confirmPayment('cash')" class="pay-btn" style="background: var(--success); padding: 14px; font-size: 1rem;">💵 Cash</button>
+                    <button onclick="confirmPayment('bank')" class="pay-btn" style="background: var(--accent); padding: 14px; font-size: 1rem;">🏦 Bank Transfer</button>
+                </div>
+                <button onclick="closePaymentModal()" class="w-full py-3 rounded-lg transition" style="background: var(--bg-elevated); border: 1px solid var(--border-light); color: var(--text-tertiary);">Cancel</button>
             </div>
-            <button onclick="closeLoginModal()" style="color:var(--text-tertiary);">Cancel</button></div>
         </div>
 
+<div id="login-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 380px; padding: 24px 20px; background: var(--bg-secondary); border-radius: 32px;">
+        <div class="text-center mb-5">
+            <div class="w-20 h-20 mx-auto mb-3 rounded-full flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
+                <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <h3 class="font-bold text-xl" style="color: var(--text-primary);">Staff Login</h3>
+            <p class="text-sm mt-1" style="color: var(--text-tertiary);">Enter your 4-digit PIN</p>
+            <p class="text-xs mt-1" style="color: var(--text-tertiary); background: var(--bg-elevated); display: inline-block; padding: 4px 12px; border-radius: 20px;">Demo: 1234 (Admin) • 0000 (Cashier)</p>
+        </div>
+        
+        <!-- PIN Display Dots -->
+        <div class="mb-6">
+            <div class="flex justify-center gap-3" id="pin-dots">
+                <div class="w-14 h-14 rounded-xl border-2 border-gray-300 flex items-center justify-center text-2xl font-bold transition-all" style="background: var(--bg-elevated);" id="pin-dot-1">•</div>
+                <div class="w-14 h-14 rounded-xl border-2 border-gray-300 flex items-center justify-center text-2xl font-bold transition-all" style="background: var(--bg-elevated);" id="pin-dot-2">•</div>
+                <div class="w-14 h-14 rounded-xl border-2 border-gray-300 flex items-center justify-center text-2xl font-bold transition-all" style="background: var(--bg-elevated);" id="pin-dot-3">•</div>
+                <div class="w-14 h-14 rounded-xl border-2 border-gray-300 flex items-center justify-center text-2xl font-bold transition-all" style="background: var(--bg-elevated);" id="pin-dot-4">•</div>
+            </div>
+            <input type="password" id="login-pin" maxlength="4" style="position: absolute; opacity: 0; pointer-events: none; height: 0; width: 0;" value="">
+        </div>
+        
+        <!-- Error Message -->
+        <div id="login-error" class="hidden text-center text-sm py-2 rounded-lg mb-4" style="background: var(--danger-soft); color: var(--danger);">
+            ❌ Invalid PIN. Please try again.
+        </div>
+        
+        <!-- Numeric Keypad - INLINE STYLES for reliability -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+            <button onclick="addPinDigit('1')" style="width: 100%; aspect-ratio: 1 / 1; background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: 20px; font-size: 28px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">1</button>
+            <button onclick="addPinDigit('2')" style="width: 100%; aspect-ratio: 1 / 1; background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: 20px; font-size: 28px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">2</button>
+            <button onclick="addPinDigit('3')" style="width: 100%; aspect-ratio: 1 / 1; background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: 20px; font-size: 28px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">3</button>
+            <button onclick="addPinDigit('4')" style="width: 100%; aspect-ratio: 1 / 1; background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: 20px; font-size: 28px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">4</button>
+            <button onclick="addPinDigit('5')" style="width: 100%; aspect-ratio: 1 / 1; background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: 20px; font-size: 28px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">5</button>
+            <button onclick="addPinDigit('6')" style="width: 100%; aspect-ratio: 1 / 1; background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: 20px; font-size: 28px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">6</button>
+            <button onclick="addPinDigit('7')" style="width: 100%; aspect-ratio: 1 / 1; background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: 20px; font-size: 28px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">7</button>
+            <button onclick="addPinDigit('8')" style="width: 100%; aspect-ratio: 1 / 1; background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: 20px; font-size: 28px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">8</button>
+            <button onclick="addPinDigit('9')" style="width: 100%; aspect-ratio: 1 / 1; background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: 20px; font-size: 28px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">9</button>
+            <button onclick="clearPinInput()" style="width: 100%; aspect-ratio: 1 / 1; background: var(--danger-soft); border: 1px solid var(--border-light); border-radius: 20px; font-size: 20px; font-weight: 600; color: var(--danger); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+            </button>
+            <button onclick="addPinDigit('0')" style="width: 100%; aspect-ratio: 1 / 1; background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: 20px; font-size: 28px; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">0</button>
+            <button onclick="submitLogin()" style="width: 100%; aspect-ratio: 1 / 1; background: var(--primary); border: 1px solid var(--border-light); border-radius: 20px; font-size: 20px; font-weight: 600; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s ease;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+        </div>
+        
+        <!-- Bottom Buttons -->
+        <div class="flex justify-between gap-3 mt-4 pt-3 border-t border-gray-200">
+            <button onclick="hideLoginModal()" class="flex-1 text-sm py-2.5 rounded-lg transition" style="color: var(--text-tertiary); background: var(--bg-elevated);">Cancel</button>
+            <button onclick="logout()" class="flex-1 text-sm py-2.5 rounded-lg transition" style="color: var(--danger); background: var(--danger-soft);">Sign Out</button>
+        </div>
+    </div>
+</div>
         <div id="item-modal" class="modal-overlay">
             <div class="modal-content"><h3 class="font-bold mb-4" id="item-modal-title">➕ Add New Item</h3>
             <input type="hidden" id="edit-item-id">
@@ -2042,7 +2149,32 @@
                 </tr>
             `).join('');
         }
-
+                // Clear all menu items (for fresh import)
+        function clearAllMenuItems() {
+            if (!currentUser || currentUser.role !== 'admin') { 
+                showToast("Admin access required"); 
+                return; 
+            }
+            
+            if (confirm("⚠️ CLEAR ALL MENU ITEMS?\n\nThis will delete EVERY item from your menu.\n\nMake sure you have a backup or CSV ready to import!\n\nContinue?")) {
+                if (confirm("LAST WARNING! This action cannot be undone. Clear all menu items?")) {
+                    // Clear menu items array
+                    menuItems = [];
+                    
+                    // Save empty menu to storage
+                    saveToLocalStorage();
+                    
+                    // Reset nextId to 1
+                    nextId = 1;
+                    
+                    // Refresh all views
+                    renderMenu();
+                    renderAdminItemsTable();
+                    
+                    showToast("✅ All menu items cleared! You can now import new CSV.");
+                }
+            }
+        }
         function openItemModal() {
             if (!currentUser || currentUser.role !== 'admin') { showToast("Admin access required"); return; }
             document.getElementById('item-modal-title').innerText = '➕ Add New Item';
@@ -2158,11 +2290,24 @@ function deleteItem(id) {
         function processImport(input) {
             const file = input.files[0];
             if (!file) return;
+            
+            // Ask if user wants to replace or append
+            const replaceMode = confirm("Import Mode:\n\n• Click OK to REPLACE entire menu (clear existing)\n• Click Cancel to APPEND to existing menu");
+            
+            if (replaceMode) {
+                if (confirm("⚠️ REPLACE MODE: This will DELETE all current menu items. Continue?")) {
+                    menuItems = [];
+                    nextId = 1;
+                }
+            }
+            
             const reader = new FileReader();
             reader.onload = (e) => {
                 const lines = e.target.result.split('\n');
                 const headers = lines[0].toLowerCase();
                 let imported = 0;
+                let skipped = 0;
+                
                 for (let i = 1; i < lines.length; i++) {
                     const cols = lines[i].split(',');
                     if (cols.length >= 3 && cols[0].trim()) {
@@ -2171,7 +2316,13 @@ function deleteItem(id) {
                         const price = parseInt(cols[2]) || 0;
                         const emoji = cols[3]?.trim() || '🧋';
                         const favorite = cols[4]?.trim().toLowerCase() === 'yes';
-                        if (name && price > 0 && !menuItems.find(m => m.name === name)) {
+                        
+                        if (name && price > 0) {
+                            // Check for duplicate only in append mode
+                            if (!replaceMode && menuItems.find(m => m.name === name && m.category === category)) {
+                                skipped++;
+                                continue;
+                            }
                             menuItems.push({ id: nextId++, name, category, price, emoji, favorite });
                             imported++;
                         }
@@ -2180,7 +2331,7 @@ function deleteItem(id) {
                 saveToLocalStorage();
                 renderMenu();
                 renderAdminItemsTable();
-                showToast(`Imported ${imported} items!`);
+                showToast(`📥 Import complete!\n✅ Added: ${imported} items\n⏭️ Skipped: ${skipped} duplicates`);
             };
             reader.readAsText(file);
             input.value = '';
@@ -2459,70 +2610,123 @@ function deleteItem(id) {
         }
 
         // ========== LOGIN ==========
-        function showLoginModal() { 
-    var modal = document.getElementById('login-modal');
-    modal.classList.add('open');
-    console.log('Login modal opened');
-    document.getElementById('login-pin').value = '';
-    document.getElementById('login-error').classList.add('hidden');
-}
-
-function closeLoginModal() { 
-    var modal = document.getElementById('login-modal');
-    modal.classList.remove('open');
-    console.log('Login modal closed');
-}        
-        let pinBuffer = '';
-function addPinDigit(d) { 
-    const input = document.getElementById('login-pin');
-    const errorDiv = document.getElementById('login-error');
-    errorDiv.classList.add('hidden'); // Hide error when typing
-    if (input.value.length < 4) input.value += d;
-    if (input.value.length === 4) submitLogin();
-}        function clearPin() { document.getElementById('login-pin').value = ''; document.getElementById('login-error').classList.add('hidden'); }
         
-function submitLogin() {
-    const pin = document.getElementById('login-pin').value;
-    console.log('Login attempt with PIN:', pin);
-    
-    // Hardcoded check for demo accounts (backup)
-    if (pin === '1234') {
-        currentUser = { name: 'Admin', role: 'admin' };
-        updateUIForUser();
-        closeLoginModal();
-        document.getElementById('login-pin').value = '';
-        showToast('Welcome Admin! Full control enabled.');
-        renderMenu();
-        renderAdminItemsTable();
-        return;
-    }
-    
-    if (pin === '0000') {
-        currentUser = { name: 'Cashier', role: 'cashier' };
-        updateUIForUser();
-        closeLoginModal();
-        document.getElementById('login-pin').value = '';
-        showToast('Welcome Cashier!');
-        renderMenu();
-        return;
-    }
-    
-    // Check staffMembers array
-    if (staffMembers[pin]) {
-        currentUser = staffMembers[pin];
-        updateUIForUser();
-        closeLoginModal();
-        document.getElementById('login-pin').value = '';
-        showToast(`Welcome ${currentUser.name}!`);
-        renderMenu();
-        renderAdminItemsTable();
-    } else {
-        document.getElementById('login-error').classList.remove('hidden');
-        document.getElementById('login-pin').value = '';
-        console.log('Invalid PIN');
-    }
-}
-        function logout() { currentUser = null; updateUIForUser(); showToast('Logged out'); renderMenu(); }
+        // Update PIN display with dots
+        function updatePinDisplay() {
+            const pinInput = document.getElementById('login-pin');
+            const pinValue = pinInput ? pinInput.value : '';
+            
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`pin-dot-${i}`);
+                if (dot) {
+                    if (i <= pinValue.length) {
+                        dot.innerHTML = '●';
+                        dot.classList.add('pin-dot-filled');
+                    } else {
+                        dot.innerHTML = '•';
+                        dot.classList.remove('pin-dot-filled');
+                    }
+                }
+            }
+        }
+        
+        function showLoginModal() { 
+            var modal = document.getElementById('login-modal');
+            if (modal) modal.classList.add('open');
+            console.log('Login modal opened');
+            
+            const pinInput = document.getElementById('login-pin');
+            const errorDiv = document.getElementById('login-error');
+            
+            if (pinInput) pinInput.value = '';
+            if (errorDiv) errorDiv.classList.add('hidden');
+            updatePinDisplay();
+        }
+
+        function closeLoginModal() { 
+            var modal = document.getElementById('login-modal');
+            if (modal) modal.classList.remove('open');
+            clearPinInput();
+            console.log('Login modal closed');
+        }
+        
+        function hideLoginModal() {
+            closeLoginModal();
+        }
+        
+        function addPinDigit(d) { 
+            const input = document.getElementById('login-pin');
+            const errorDiv = document.getElementById('login-error');
+            if (errorDiv) errorDiv.classList.add('hidden');
+            
+            if (input && input.value.length < 4) {
+                input.value += d;
+                updatePinDisplay();
+                
+                if (input.value.length === 4) {
+                    setTimeout(() => submitLogin(), 200);
+                }
+            }
+        }
+        
+        function clearPinInput() { 
+            const input = document.getElementById('login-pin');
+            const errorDiv = document.getElementById('login-error');
+            if (input) input.value = '';
+            if (errorDiv) errorDiv.classList.add('hidden');
+            updatePinDisplay();
+        }
+        
+        function submitLogin() {
+            const pin = document.getElementById('login-pin').value;
+            console.log('Login attempt with PIN:', pin);
+            
+            // Hardcoded check for demo accounts (backup)
+            if (pin === '1234') {
+                currentUser = { name: 'Admin', role: 'admin' };
+                updateUIForUser();
+                closeLoginModal();
+                showToast('Welcome Admin! Full control enabled.');
+                renderMenu();
+                renderAdminItemsTable();
+                updatePinDisplay();
+                return;
+            }
+            
+            if (pin === '0000') {
+                currentUser = { name: 'Cashier', role: 'cashier' };
+                updateUIForUser();
+                closeLoginModal();
+                showToast('Welcome Cashier!');
+                renderMenu();
+                updatePinDisplay();
+                return;
+            }
+            
+            // Check staffMembers array
+            if (staffMembers[pin]) {
+                currentUser = staffMembers[pin];
+                updateUIForUser();
+                closeLoginModal();
+                showToast(`Welcome ${currentUser.name}!`);
+                renderMenu();
+                renderAdminItemsTable();
+                updatePinDisplay();
+            } else {
+                const errorDiv = document.getElementById('login-error');
+                if (errorDiv) errorDiv.classList.remove('hidden');
+                clearPinInput();
+                console.log('Invalid PIN');
+            }
+        }
+        
+        function logout() { 
+            currentUser = null; 
+            updateUIForUser(); 
+            showToast('Logged out'); 
+            renderMenu();
+            clearPinInput();
+        }
 
         function updateUIForUser() {
             const loginBtn = document.getElementById('login-btn');
@@ -2542,7 +2746,6 @@ function submitLogin() {
                 if (adminTab) adminTab.style.display = 'inline-flex';
             }
         }
-
         // ========== NAVIGATION ==========
         function switchTab(tabId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));

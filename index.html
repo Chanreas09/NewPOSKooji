@@ -759,7 +759,77 @@
             <div id="staff-list" style="max-height:300px; overflow-y:auto;"></div>
             <button onclick="closeStaffModal()" class="w-full mt-3 p-2" style="background:var(--bg-elevated); border-radius:var(--radius-sm);">Close</button></div>
         </div>
-
+                <!-- DRINK CUSTOMIZATION MODAL -->
+        <div id="drink-modal" class="modal-overlay">
+            <div class="modal-content" style="max-width: 500px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-light); padding-bottom: 12px;">
+                    <h3 class="font-bold" id="modal-item-name" style="font-size: 1.25rem;">Customize Your Drink</h3>
+                    <button onclick="closeDrinkModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">✕</button>
+                </div>
+                
+                <!-- SUGAR LEVEL - MANDATORY -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-weight: 600;">🍬 Sugar Level</span>
+                            <span style="color: var(--danger); font-size: 0.7rem; background: var(--danger-soft); padding: 2px 8px; border-radius: 20px;">*Required</span>
+                        </div>
+                        <span id="sugar-status" style="color: var(--danger); font-size: 0.7rem;">Not selected</span>
+                    </div>
+                    <div id="sugar-options" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
+                    <p style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 6px;">Choose your sweetness level</p>
+                </div>
+                
+                <!-- ICE LEVEL - MANDATORY -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-weight: 600;">🧊 Ice Level</span>
+                            <span style="color: var(--danger); font-size: 0.7rem; background: var(--danger-soft); padding: 2px 8px; border-radius: 20px;">*Required</span>
+                        </div>
+                        <span id="ice-status" style="color: var(--danger); font-size: 0.7rem;">Not selected</span>
+                    </div>
+                    <div id="ice-options" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
+                    <p style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 6px;">Choose how much ice you prefer</p>
+                </div>
+                
+                <!-- TOPPINGS - OPTIONAL -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-weight: 600;">➕ Toppings</span>
+                        <span id="topping-count-badge" style="font-size: 0.7rem; background: var(--bg-elevated); padding: 2px 10px; border-radius: 20px;">0/3 selected</span>
+                    </div>
+                    <div id="topping-options" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></div>
+                    <p style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 6px;">Extra charges apply (Max 3 different toppings)</p>
+                </div>
+                
+                <!-- PRICE SUMMARY -->
+                <div style="background: var(--bg-elevated); border-radius: var(--radius-md); padding: 12px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.875rem;">
+                        <span>Base Price:</span>
+                        <span id="modal-base-price">៛ 0</span>
+                    </div>
+                    <div id="toppings-total-row" style="display: none; justify-content: space-between; font-size: 0.875rem; margin-top: 6px;">
+                        <span>Toppings:</span>
+                        <span id="modal-toppings-price" style="color: var(--primary);">+៛ 0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.125rem; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-light);">
+                        <span>TOTAL:</span>
+                        <span id="modal-total-price" style="color: var(--primary);">៛ 0</span>
+                    </div>
+                </div>
+                
+                <!-- ACTION BUTTONS -->
+                <div style="display: flex; gap: 12px;">
+                    <button onclick="closeDrinkModal()" class="pay-btn" style="background: var(--bg-elevated); color: var(--text-primary);">Cancel</button>
+                    <button id="add-to-order-btn" onclick="confirmDrinkAdd()" class="pay-btn" style="background: var(--primary); opacity: 0.5; cursor: not-allowed;" disabled>✅ Add to Order</button>
+                </div>
+                
+                <div id="validation-message" style="display: none; text-align: center; margin-top: 12px; color: var(--danger); font-size: 0.75rem;">
+                    ⚠️ Please select Sugar Level and Ice Level before adding to order
+                </div>
+            </div>
+        </div>
         <!-- File input for import -->
         <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="processImport(this)">
     </div>
@@ -902,6 +972,18 @@
         let staffMembers = { '1234': { name: 'Admin', role: 'admin' }, '0000': { name: 'Cashier', role: 'cashier' } };
         let revenueChart = null;
         let nextId = 109;
+                // Toppings List - ADD THIS HERE
+        const toppingsList = [
+            { id: 't1', name: '💎 Pearl', price: 500 },
+            { id: 't2', name: '🥥 Coco Jelly', price: 1000 },
+            { id: 't3', name: '🟤 Brown Jelly', price: 1000 },
+            { id: 't4', name: '🍦 Cream Sweet', price: 1000 },
+            { id: 't5', name: '🥚 Cream Egg', price: 1500 },
+            { id: 't6', name: '🧂 Cream Salted', price: 1500 },
+            { id: 't7', name: '🍯 Honey', price: 500 },
+            { id: 't8', name: '⚡ Extra 1 shot', price: 2000 },
+            { id: 't9', name: '⚡⚡ Extra 2 shots', price: 4000 }
+        ];
 
         // Helper Functions
         function showToast(msg) {
@@ -978,15 +1060,56 @@
             });
         }
 
-        function addToCart(item) {
-            const existing = cart.find(i => i.id === item.id);
-            if (existing) existing.qty++;
-            else cart.push({ ...item, qty: 1 });
-            updateCartBadge();
-            renderCartSheet();
-            showToast(`Added ${item.name} to cart 🧋`);
+        function addToCart(item, skipCustomize = false) {
+            // For Food items or when skipCustomize is true, add directly
+            if (item.category === '🍔 Food' || skipCustomize) {
+                const existing = cart.find(i => i.id === item.id && !i.customized);
+                if (existing) existing.qty++;
+                else cart.push({ ...item, qty: 1, customized: false });
+                updateCartBadge();
+                renderCartSheet();
+                showToast(`Added ${item.name} to cart 🧋`);
+                return;
+            }
+            
+            // For drinks, open customization modal
+            tempCartItem = {
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                emoji: item.emoji,
+                category: item.category,
+                sugar: null,
+                ice: null,
+                toppings: [],
+                basePrice: item.price
+            };
+            
+            // Reset modal state
+            isSugarSelected = false;
+            isIceSelected = false;
+            
+            document.getElementById('modal-item-name').innerHTML = `${item.emoji || '🧋'} ${item.name}`;
+            document.getElementById('modal-base-price').innerHTML = `៛ ${item.price.toLocaleString()}`;
+            document.getElementById('modal-total-price').innerHTML = `៛ ${item.price.toLocaleString()}`;
+            document.getElementById('toppings-total-row').style.display = 'none';
+            document.getElementById('validation-message').style.display = 'none';
+            
+            // Disable add button initially
+            const addBtn = document.getElementById('add-to-order-btn');
+            addBtn.disabled = true;
+            addBtn.style.opacity = '0.5';
+            addBtn.style.cursor = 'not-allowed';
+            
+            // Reset status indicators
+            document.getElementById('sugar-status').innerHTML = 'Not selected';
+            document.getElementById('sugar-status').style.color = 'var(--danger)';
+            document.getElementById('ice-status').innerHTML = 'Not selected';
+            document.getElementById('ice-status').style.color = 'var(--danger)';
+            
+            renderDrinkOptions();
+            document.getElementById('drink-modal').classList.add('open');
         }
-
         function updateCartBadge() {
             const total = cart.reduce((sum, i) => sum + i.qty, 0);
             document.getElementById('cartItemCount').innerText = total;
@@ -1014,7 +1137,227 @@
             document.getElementById('cart-total').innerHTML = `៛ ${total.toLocaleString()}`;
             return { subtotal, discountAmount, total };
         }
+                // ========== DRINK CUSTOMIZATION FUNCTIONS ==========
+        let tempCartItem = null;
+        let isSugarSelected = false;
+        let isIceSelected = false;
 
+        function renderDrinkOptions() {
+            // Sugar Options
+            const sugars = ['0%', '10%', '25%', '50%', '75%', '100%', '120%'];
+            const sugarContainer = document.getElementById('sugar-options');
+            sugarContainer.innerHTML = '';
+            
+            sugars.forEach(s => {
+                const btn = document.createElement('button');
+                btn.innerText = s;
+                btn.style.cssText = `
+                    padding: 10px;
+                    border-radius: 12px;
+                    font-size: 0.875rem;
+                    border: 1px solid var(--border-light);
+                    background: ${tempCartItem.sugar === s ? 'var(--primary)' : 'var(--bg-elevated)'};
+                    color: ${tempCartItem.sugar === s ? 'white' : 'var(--text-primary)'};
+                    cursor: pointer;
+                    transition: all 0.15s;
+                `;
+                btn.onclick = () => {
+                    tempCartItem.sugar = s;
+                    isSugarSelected = true;
+                    document.getElementById('sugar-status').innerHTML = `Selected: ${s}`;
+                    document.getElementById('sugar-status').style.color = 'var(--success)';
+                    renderDrinkOptions();
+                    checkFormCompletion();
+                };
+                sugarContainer.appendChild(btn);
+            });
+            
+            // Ice Options
+            const ices = ['No Ice', 'Less Ice', 'Normal', 'Extra Ice'];
+            const iceContainer = document.getElementById('ice-options');
+            iceContainer.innerHTML = '';
+            
+            ices.forEach(i => {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.style.cssText = `
+                    padding: 10px;
+                    border-radius: 12px;
+                    font-size: 0.875rem;
+                    border: 1px solid var(--border-light);
+                    background: ${tempCartItem.ice === i ? 'var(--primary)' : 'var(--bg-elevated)'};
+                    color: ${tempCartItem.ice === i ? 'white' : 'var(--text-primary)'};
+                    cursor: pointer;
+                    transition: all 0.15s;
+                `;
+                btn.onclick = () => {
+                    tempCartItem.ice = i;
+                    isIceSelected = true;
+                    document.getElementById('ice-status').innerHTML = `Selected: ${i}`;
+                    document.getElementById('ice-status').style.color = 'var(--success)';
+                    renderDrinkOptions();
+                    checkFormCompletion();
+                };
+                iceContainer.appendChild(btn);
+            });
+            
+            // Toppings
+            const toppingContainer = document.getElementById('topping-options');
+            toppingContainer.innerHTML = '';
+            document.getElementById('topping-count-badge').innerHTML = `${tempCartItem.toppings.length}/3 selected`;
+            
+            toppingsList.forEach(t => {
+                const existingTopping = tempCartItem.toppings.find(tp => tp.id === t.id);
+                const isSelected = !!existingTopping;
+                
+                const div = document.createElement('div');
+                div.style.cssText = `
+                    padding: 10px;
+                    border-radius: 12px;
+                    border: 1px solid var(--border-light);
+                    background: ${isSelected ? '#d8f3dc' : 'var(--bg-elevated)'};
+                    cursor: pointer;
+                `;
+                
+                if (!isSelected) {
+                    div.onclick = () => addToppingToDrink(t.id);
+                }
+                
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--primary); background: ${isSelected ? 'var(--primary)' : 'transparent'}; display: flex; align-items: center; justify-content: center;">
+                                ${isSelected ? '<span style="color: white; font-size: 12px;">✓</span>' : ''}
+                            </div>
+                            <div>
+                                <span style="font-weight: 500;">${t.name}</span>
+                                <span style="font-size: 0.7rem; color: var(--text-tertiary);"> +៛${t.price}</span>
+                            </div>
+                        </div>
+                        ${isSelected ? `
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <button onclick="event.stopPropagation(); updateToppingQty('${t.id}', -1)" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border-light); background: var(--bg-elevated); cursor: pointer;">−</button>
+                                <span style="min-width: 24px; text-align: center;">${existingTopping?.qty || 1}</span>
+                                <button onclick="event.stopPropagation(); updateToppingQty('${t.id}', 1)" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border-light); background: var(--bg-elevated); cursor: pointer;">+</button>
+                                <button onclick="event.stopPropagation(); removeToppingFromDrink('${t.id}')" style="background: none; border: none; color: var(--danger); cursor: pointer;">✕</button>
+                            </div>
+                        ` : '<button style="padding: 6px 14px; border-radius: 20px; background: var(--primary); color: white; border: none; font-size: 0.7rem; cursor: pointer;">+ Add</button>'}
+                    </div>
+                `;
+                toppingContainer.appendChild(div);
+            });
+        }
+        
+        function addToppingToDrink(toppingId) {
+            if (tempCartItem.toppings.length >= 3) {
+                showToast("Maximum 3 different toppings allowed per drink");
+                return;
+            }
+            const topping = toppingsList.find(t => t.id === toppingId);
+            if (topping && !tempCartItem.toppings.find(t => t.id === toppingId)) {
+                tempCartItem.toppings.push({ ...topping, qty: 1 });
+                renderDrinkOptions();
+                updateTotalPrice();
+            }
+        }
+        
+        function updateToppingQty(toppingId, delta) {
+            const topping = tempCartItem.toppings.find(t => t.id === toppingId);
+            if (topping) {
+                const newQty = (topping.qty || 1) + delta;
+                if (newQty < 1) {
+                    removeToppingFromDrink(toppingId);
+                } else if (newQty <= 5) {
+                    topping.qty = newQty;
+                    renderDrinkOptions();
+                    updateTotalPrice();
+                } else {
+                    showToast("Maximum 5 portions per topping");
+                }
+            }
+        }
+        
+        function removeToppingFromDrink(toppingId) {
+            tempCartItem.toppings = tempCartItem.toppings.filter(t => t.id !== toppingId);
+            renderDrinkOptions();
+            updateTotalPrice();
+        }
+        
+        function updateTotalPrice() {
+            let finalPrice = tempCartItem.basePrice;
+            let toppingsTotal = 0;
+            
+            tempCartItem.toppings.forEach(t => {
+                toppingsTotal += t.price * (t.qty || 1);
+            });
+            
+            finalPrice += toppingsTotal;
+            tempCartItem.price = finalPrice;
+            
+            document.getElementById('modal-total-price').innerHTML = `៛ ${finalPrice.toLocaleString()}`;
+            
+            if (toppingsTotal > 0) {
+                document.getElementById('toppings-total-row').style.display = 'flex';
+                document.getElementById('modal-toppings-price').innerHTML = `+៛ ${toppingsTotal.toLocaleString()}`;
+            } else {
+                document.getElementById('toppings-total-row').style.display = 'none';
+            }
+        }
+        
+        function checkFormCompletion() {
+            const addBtn = document.getElementById('add-to-order-btn');
+            const validationMsg = document.getElementById('validation-message');
+            
+            if (isSugarSelected && isIceSelected) {
+                addBtn.disabled = false;
+                addBtn.style.opacity = '1';
+                addBtn.style.cursor = 'pointer';
+                validationMsg.style.display = 'none';
+            } else {
+                addBtn.disabled = true;
+                addBtn.style.opacity = '0.5';
+                addBtn.style.cursor = 'not-allowed';
+                validationMsg.style.display = 'block';
+            }
+        }
+        
+        function confirmDrinkAdd() {
+            if (!isSugarSelected || !isIceSelected) {
+                document.getElementById('validation-message').style.display = 'block';
+                return;
+            }
+            
+            // Create a display string for customization
+            const customizationNote = `${tempCartItem.sugar} Sugar, ${tempCartItem.ice} Ice` + 
+                (tempCartItem.toppings.length > 0 ? ` + ${tempCartItem.toppings.map(t => t.name).join(', ')}` : '');
+            
+            // Add to cart with customization info
+            const existing = cart.find(i => i.id === tempCartItem.id && i.customization === customizationNote);
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({
+                    ...tempCartItem,
+                    qty: 1,
+                    customized: true,
+                    customization: customizationNote,
+                    displayName: `${tempCartItem.emoji || '🧋'} ${tempCartItem.name}`,
+                    toppingsList: tempCartItem.toppings
+                });
+            }
+            
+            updateCartBadge();
+            renderCartSheet();
+            showToast(`✅ Added ${tempCartItem.name} with ${customizationNote}`);
+            closeDrinkModal();
+        }
+        
+        function closeDrinkModal() {
+            document.getElementById('drink-modal').classList.remove('open');
+            tempCartItem = null;
+            isSugarSelected = false;
+            isIceSelected = false;
+        }
         function renderCartSheet() {
             const container = document.getElementById('cart-items-list');
             if (!container) return;
@@ -1024,10 +1367,16 @@
                 return;
             }
             container.innerHTML = cart.map((item, idx) => `
-                <div class="cart-item">
-                    <div class="cart-item-info"><div class="cart-item-name">${item.name} x${item.qty}</div></div>
-                    <div class="cart-item-price">៛ ${(item.price * item.qty).toLocaleString()}</div>
-                    <div class="cart-item-actions">
+                <div class="cart-item" style="flex-direction: column; align-items: stretch;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.displayName || item.name} x${item.qty}</div>
+                            ${item.customization ? `<div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 4px;">✨ ${item.customization}</div>` : ''}
+                            ${item.toppingsList && item.toppingsList.length ? `<div style="font-size: 0.65rem; color: var(--primary); margin-top: 2px;">➕ ${item.toppingsList.map(t => t.name).join(', ')}</div>` : ''}
+                        </div>
+                        <div class="cart-item-price">៛ ${(item.price * item.qty).toLocaleString()}</div>
+                    </div>
+                    <div class="cart-item-actions" style="margin-top: 8px;">
                         <button class="qty-btn" onclick="changeQty(${idx}, -1)">-</button>
                         <span style="min-width:20px; text-align:center;">${item.qty}</span>
                         <button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button>
@@ -1037,7 +1386,6 @@
             `).join('');
             updateTotals();
         }
-
         // ========== PAYMENT ==========
         function openPaymentModal() {
             if (cart.length === 0) { showToast("Cart is empty"); return; }
@@ -1102,7 +1450,7 @@
             else if (currentCategory !== '⭐ Favorites') filtered = menuItems.filter(i => i.category === currentCategory);
             
             container.innerHTML = filtered.map(item => `
-                <div class="menu-card" onclick="addToCart({id:${item.id}, name:'${item.name.replace(/'/g, "\\'")}', price:${item.price}})">
+                <div class="menu-card" onclick="addToCart({id:${item.id}, name:'${item.name.replace(/'/g, "\\'")}', price:${item.price}, category:'${item.category}', emoji:'${item.emoji || '🧋'}'})">
                     <div class="card-image">${item.emoji || '🧋'}</div>
                     <div class="card-content">
                         <div class="card-title">${item.name}</div>

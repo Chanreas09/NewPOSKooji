@@ -643,6 +643,7 @@
                     <div class="admin-card" onclick="backupData()">💾 Backup Data</div>
                     <div class="admin-card" onclick="restoreData()">📂 Restore Data</div>
                     <div class="admin-card" onclick="openStaffModal()">👥 Staff Mgmt</div>
+                    <div class="admin-card" onclick="testTelegramConnection()" style="background:var(--primary-soft);">📱 Test Telegram</div>
                     <div class="admin-card" onclick="factoryReset()" style="background:var(--danger-soft); color:var(--danger);">🗑️ Factory Reset</div>
                 </div>
 
@@ -990,7 +991,189 @@
             { id: 't8', name: '⚡ Extra 1 shot', price: 2000 },
             { id: 't9', name: '⚡⚡ Extra 2 shots', price: 4000 }
         ];
-
+                // ========== TELEGRAM REPORT SYSTEM ==========
+        const BOT_TOKEN = "8587162120:AAGe9T3QPCwkUVeUHHbvdBP0X_olYBtth4A";
+        // REPLACE THIS WITH YOUR GROUP CHAT ID (negative number for groups)
+        const GROUP_CHAT_ID = "-5210843768";  // Example: "-4123456789"
+        
+        // Track daily sales for 6 PM summary
+        let dailyDrinkSales = {};  // { "Hot Latte": { qty: 5, revenue: 20000 }, ... }
+        let lastSummaryDate = getTodayDate();
+        
+        // Send order notification to Telegram
+        async function sendOrderToTelegram(order) {
+            if (GROUP_CHAT_ID === "YOUR_GROUP_CHAT_ID_HERE") {
+                console.log("⚠️ Telegram not configured - set GROUP_CHAT_ID first");
+                return;
+            }
+            
+            let msg = `🧋 *NEW ORDER ${order.id}*\n`;
+            msg += `━━━━━━━━━━━━━━━━━━\n`;
+            
+            // Customer & Order Type
+            const orderTypeIcon = {
+                'here': '🍵 Dine In',
+                'away': '🥡 Takeaway', 
+                'delivery': '🛵 Delivery'
+            };
+            msg += `👤 ${order.customerName || 'Guest'} | ${orderTypeIcon[order.orderType] || '🍵 Dine In'}\n`;
+            msg += `━━━━━━━━━━━━━━━━━━\n`;
+            
+            // Items
+            order.items.forEach(item => {
+                const displayName = item.displayName || item.name;
+                msg += `${item.emoji || '🧋'} ${displayName} x${item.qty}`;
+                msg += ` ........ ${(item.price * item.qty).toLocaleString()}៛\n`;
+                if (item.customization) {
+                    msg += `   → ${item.customization}\n`;
+                }
+            });
+            
+            msg += `━━━━━━━━━━━━━━━━━━\n`;
+            msg += `💵 *TOTAL: ${order.total.toLocaleString()}៛*\n`;
+            msg += `💳 ${order.paymentMethod === 'cash' ? 'Cash' : 'Bank Transfer'}\n`;
+            msg += `🕐 ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+            
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: GROUP_CHAT_ID,
+                        text: msg,
+                        parse_mode: 'Markdown'
+                    })
+                });
+                const result = await response.json();
+                if (result.ok) {
+                    console.log('✅ Order sent to Telegram');
+                } else {
+                    console.log('❌ Telegram error:', result.description);
+                }
+            } catch (error) {
+                console.log('⚠️ Telegram send failed:', error);
+            }
+        }
+        
+        // Track daily drink sales for summary
+        function trackDrinkSales(order) {
+            const today = getTodayDate();
+            
+            // Reset if new day
+            if (today !== lastSummaryDate) {
+                dailyDrinkSales = {};
+                lastSummaryDate = today;
+            }
+            
+            // Track each drink
+            order.items.forEach(item => {
+                const drinkName = item.displayName || item.name;
+                if (!dailyDrinkSales[drinkName]) {
+                    dailyDrinkSales[drinkName] = { qty: 0, revenue: 0 };
+                }
+                dailyDrinkSales[drinkName].qty += item.qty;
+                dailyDrinkSales[drinkName].revenue += item.price * item.qty;
+            });
+        }
+        
+        // Send 6 PM daily summary
+        async function sendDailySummary() {
+            if (GROUP_CHAT_ID === "YOUR_GROUP_CHAT_ID_HERE") return;
+            
+            const today = getTodayDate();
+            const totalOrders = dailyStats.orders;
+            const totalRevenue = dailyStats.revenue;
+            
+            if (totalOrders === 0) {
+                // No sales today
+                const msg = `📊 *DAILY SUMMARY - ${today}*\n━━━━━━━━━━━━━━━━━━\n📭 No orders today. Quiet day!`;
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: GROUP_CHAT_ID, text: msg, parse_mode: 'Markdown' })
+                });
+                return;
+            }
+            
+            // Get top 6 drinks
+            const topDrinks = Object.entries(dailyDrinkSales)
+                .sort((a, b) => b[1].qty - a[1].qty)
+                .slice(0, 6);
+            
+            // Build summary message
+            let msg = `📊 *DAILY SUMMARY - ${today}*\n`;
+            msg += `━━━━━━━━━━━━━━━━━━\n`;
+            msg += `📋 Total Orders: ${totalOrders}\n`;
+            msg += `💰 Total Revenue: ${totalRevenue.toLocaleString()}៛\n`;
+            msg += `📈 Avg Order: ${Math.round(totalRevenue/totalOrders).toLocaleString()}៛\n`;
+            msg += `━━━━━━━━━━━━━━━━━━\n`;
+            msg += `🔥 *TOP 6 DRINKS TODAY*\n`;
+            
+            topDrinks.forEach(([name, data], index) => {
+                const medal = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : '  '));
+                msg += `${medal} ${name}: ${data.qty} sold (${data.revenue.toLocaleString()}៛)\n`;
+            });
+            
+            msg += `━━━━━━━━━━━━━━━━━━\n`;
+            msg += `🕕 Report generated at 6:00 PM`;
+            
+            try {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: GROUP_CHAT_ID, text: msg, parse_mode: 'Markdown' })
+                });
+                console.log('✅ Daily summary sent to Telegram');
+            } catch (error) {
+                console.log('⚠️ Summary send failed:', error);
+            }
+        }
+        
+        // Check if it's 6 PM and send summary
+        function startTelegramScheduler() {
+            setInterval(() => {
+                const now = new Date();
+                const hour = now.getHours();
+                const minute = now.getMinutes();
+                
+                // Check for 6:00 PM (18:00)
+                if (hour === 18 && minute === 0) {
+                    const today = getTodayDate();
+                    // Send only once per day (check if already sent today)
+                    const lastSent = localStorage.getItem('koojiLastSummaryDate');
+                    if (lastSent !== today) {
+                        sendDailySummary();
+                        localStorage.setItem('koojiLastSummaryDate', today);
+                    }
+                }
+            }, 60000); // Check every minute
+        }
+        
+        // Test function to verify Telegram connection
+        async function testTelegramConnection() {
+            if (GROUP_CHAT_ID === "YOUR_GROUP_CHAT_ID_HERE") {
+                alert("⚠️ Please set your GROUP_CHAT_ID first!\n\n1. Add bot to your group\n2. Send a message in the group\n3. Visit: https://api.telegram.org/bot8587162120:AAGe9T3QPCwkUVeUHHbvdBP0X_olYBtth4A/getUpdates\n4. Copy the 'id' field (negative number for groups)\n5. Replace 'YOUR_GROUP_CHAT_ID_HERE' with that number");
+                return;
+            }
+            
+            const testMsg = "🧋 *KOOJI POS Connected!*\n✅ Bot is ready to receive order notifications.\n📊 Daily summary will be sent at 6:00 PM.";
+            
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: GROUP_CHAT_ID, text: testMsg, parse_mode: 'Markdown' })
+                });
+                const result = await response.json();
+                if (result.ok) {
+                    alert("✅ Telegram connected! Check your group for test message.");
+                } else {
+                    alert("❌ Failed: " + result.description + "\n\nMake sure the bot is in your group and CHAT_ID is correct.");
+                }
+            } catch (error) {
+                alert("❌ Connection error: " + error.message);
+            }
+        }
         // Helper Functions
         function showToast(msg) {
             const toast = document.createElement('div');
@@ -1570,7 +1753,7 @@
             localStorage.setItem('koojiCurrentOrderNumber', currentOrderNumber);
             return '#' + orderNum.toString().padStart(3, '0');
         }
-                function confirmPayment(method) {
+        function confirmPayment(method) {
             const { subtotal, discountAmount, total } = updateTotals();
                        const orderId = generateOrderNumber();  // ← USE NEW FUNCTION
             const customerName = document.getElementById('customer-name-input').value || 'Guest';
@@ -1587,6 +1770,10 @@
             dailyStats.orders++;
             updateStats();
             saveToLocalStorage();
+
+            // ========== ADD THESE TWO LINES ==========
+    sendOrderToTelegram(newOrder);    // Send order to Telegram
+    trackDrinkSales(newOrder);        // Track for daily summary
             
             closePaymentModal();
             cart = [];
@@ -2060,7 +2247,9 @@ function submitLogin() {
                 } else {
                     showToast('✨ POS Ready | Order #' + currentOrderNumber.toString().padStart(3, '0') + ' ready');
                 }
-            }
+            };
+            // Add this line inside DOMContentLoaded, after startMidnightChecker()
+startTelegramScheduler();
         });
         
         // ========== KEYBOARD SHORTCUT ==========

@@ -1991,7 +1991,7 @@
                         <div class="card-title">${item.name}</div>
                         <div class="card-price">៛ ${item.price.toLocaleString()}</div>
                     </div>
-                    ${item.favorite ? `<div class="favorite-star">⭐</div>` : ''}
+                    ${item.favorite ? `<div class="favorite-star" onclick="event.stopPropagation(); toggleFavorite(${item.id})">⭐</div>` : `<div class="favorite-star" onclick="event.stopPropagation(); toggleFavorite(${item.id})" style="opacity:0.3;">☆</div>`}
                     ${currentUser && currentUser.role === 'admin' ? `<div class="edit-badge" onclick="event.stopPropagation(); openEditItemModal(${item.id})">✏️ EDIT</div>` : ''}
                 </div>
             `).join('');
@@ -2007,7 +2007,7 @@
                     <td>${item.name}</td>
                     <td>${item.category}</td>
                     <td>៛ ${item.price.toLocaleString()}</td>
-                    <td>${item.favorite ? '⭐' : '☆'}</td>
+                    <td><button onclick="toggleFavorite(${item.id})" style="background:none; border:none; cursor:pointer; font-size:1rem;">${item.favorite ? '⭐' : '☆'}</button></td>
                     <td>
                         <button class="edit-btn" onclick="openEditItemModal(${item.id})">Edit</button>
                         <button class="delete-btn" onclick="deleteItem(${item.id})">Delete</button>

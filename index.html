@@ -681,10 +681,13 @@
                 </div>
             </div>
 <div class="header-actions">
+
     <div class="dark-toggle" id="darkModeToggle">
         <div class="dark-toggle-option" data-theme="light">☀️ Light</div>
         <div class="dark-toggle-option" data-theme="dark">🌙 Dark</div>
     </div>
+    
+     <button onclick="toggleFullScreen()" class="category-pill" style="margin:0; padding:6px 16px; background:var(--primary-dark); color:white;">🖥️ ⛶ Full Screen</button>
     <button onclick="switchTab('pos')" class="category-pill" style="margin:0; padding:6px 16px; background:var(--primary); color:white;">🛒 POS</button>
     <button onclick="switchTab('kitchen')" class="category-pill" style="margin:0; padding:6px 16px;">👨‍🍳 Kitchen</button>
     <button onclick="switchTab('admin')" class="category-pill" style="margin:0; padding:6px 16px;" id="admin-tab-btn">👑 Admin</button>
@@ -1284,6 +1287,30 @@
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
+                // ========== FULL SCREEN MODE ==========
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting full-screen: ${err.message}`);
+                });
+                showToast('🖥️ Entered full screen mode (Press ESC to exit)');
+            } else {
+                document.exitFullscreen();
+                showToast('⬅️ Exited full screen mode');
+            }
+        }
+        
+        // Optional: Listen for full screen change to update button text
+        document.addEventListener('fullscreenchange', function() {
+            const fsBtn = document.querySelector('[onclick="toggleFullScreen()"]');
+            if (fsBtn) {
+                if (document.fullscreenElement) {
+                    fsBtn.innerHTML = '🗗 Exit Full Screen';
+                } else {
+                    fsBtn.innerHTML = '🖥️ ⛶ Full Screen';
+                }
+            }
+        });
                 // ========== SOUND NOTIFICATION ==========
         let audioContext = null;
         let lastOrderCount = 0;

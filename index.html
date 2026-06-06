@@ -972,7 +972,13 @@
         let staffMembers = { '1234': { name: 'Admin', role: 'admin' }, '0000': { name: 'Cashier', role: 'cashier' } };
         let revenueChart = null;
         let nextId = 109;
-                // Toppings List - ADD THIS HERE
+        
+        // DAILY RESET SYSTEM
+        let currentOrderNumber = 1;  // Starts at 1 each day
+        let lastResetDate = null;     // Tracks last date we reset
+        let orderHistory = [];         // Stores past days for reports
+        
+                        // Toppings List - ADD THIS HERE
         const toppingsList = [
             { id: 't1', name: '💎 Pearl', price: 500 },
             { id: 't2', name: '🥥 Coco Jelly', price: 1000 },
@@ -993,13 +999,164 @@
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
-
+                // ========== DAILY RESET SYSTEM ==========
+        
+        // Get today's date as YYYY-MM-DD
+        function getTodayDate() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        }
+        
+        // Save today's stats to history before reset
+        function archiveDailyStats() {
+            const today = getTodayDate();
+            if (dailyStats.revenue > 0 || dailyStats.orders > 0) {
+                const archivedDay = {
+                    date: today,
+                    revenue: dailyStats.revenue,
+                    orders: dailyStats.orders,
+                    averageOrder: dailyStats.orders > 0 ? Math.round(dailyStats.revenue / dailyStats.orders) : 0,
+                    archivedAt: new Date().toISOString()
+                };
+                
+                // Load existing history
+                const savedHistory = localStorage.getItem('koojiOrderHistory');
+                let history = savedHistory ? JSON.parse(savedHistory) : [];
+                
+                // Check if today already archived (avoid duplicate)
+                const existingIndex = history.findIndex(h => h.date === today);
+                if (existingIndex >= 0) {
+                    history[existingIndex] = archivedDay;
+                } else {
+                    history.push(archivedDay);
+                }
+                
+                // Keep only last 90 days
+                if (history.length > 90) history = history.slice(-90);
+                
+                localStorage.setItem('koojiOrderHistory', JSON.stringify(history));
+                orderHistory = history;
+                
+                console.log(`📦 Archived: ${today} - ${dailyStats.orders} orders, ៛${dailyStats.revenue}`);
+                return archivedDay;
+            }
+            return null;
+        }
+        
+        // Reset everything for new day
+        function performDailyReset() {
+            const today = getTodayDate();
+            
+            // Archive yesterday's stats before reset
+            const archived = archiveDailyStats();
+            
+            // Reset daily counters
+            dailyStats = { revenue: 0, orders: 0 };
+            currentOrderNumber = 1;
+            
+            // Clear kitchen queue (old orders from yesterday)
+            kitchenQueue = [];
+            
+            // Clear cart (just to be safe)
+            cart = [];
+            updateCartBadge();
+            if (typeof renderCartSheet === 'function') renderCartSheet();
+            
+            // Update last reset date
+            lastResetDate = today;
+            localStorage.setItem('koojiLastResetDate', lastResetDate);
+            localStorage.setItem('koojiCurrentOrderNumber', currentOrderNumber);
+            localStorage.setItem('koojiDailyStats', JSON.stringify(dailyStats));
+            
+            // Show morning notification
+            if (archived && archived.orders > 0) {
+                showToast(`🌅 Good morning! New day started.\n📊 Yesterday: ${archived.orders} orders, ៛ ${archived.revenue.toLocaleString()}`);
+                console.log(`✅ Daily reset complete. Yesterday: ${archived.orders} orders`);
+            } else {
+                showToast(`🌅 Good morning! New day started. Order #001 ready!`);
+            }
+            
+            // Update UI
+            updateStats();
+            
+            // Save to storage
+            saveToLocalStorage();
+            
+            return true;
+        }
+        
+        // Check if we need to reset (called on page load and periodically)
+        function checkAndResetIfNewDay() {
+            const today = getTodayDate();
+            const savedResetDate = localStorage.getItem('koojiLastResetDate');
+            const savedOrderNumber = localStorage.getItem('koojiCurrentOrderNumber');
+            const savedStats = localStorage.getItem('koojiDailyStats');
+            
+            // Load saved values if they exist
+            if (savedResetDate) lastResetDate = savedResetDate;
+            if (savedOrderNumber) currentOrderNumber = parseInt(savedOrderNumber) || 1;
+            if (savedStats) {
+                try {
+                    const stats = JSON.parse(savedStats);
+                    dailyStats = stats;
+                } catch(e) {}
+            }
+            
+            // Load order history for display
+            const savedHistory = localStorage.getItem('koojiOrderHistory');
+            if (savedHistory) orderHistory = JSON.parse(savedHistory);
+            
+            // Check if it's a new day
+            if (!lastResetDate || lastResetDate !== today) {
+                console.log(`📅 Date changed: ${lastResetDate} → ${today}. Resetting...`);
+                performDailyReset();
+                return true;
+            }
+            
+            return false;
+        }
+                // Check for midnight every minute
+        function startMidnightChecker() {
+            setInterval(() => {
+                const now = new Date();
+                // Check if it's exactly midnight (00:00) or just past
+                if (now.getHours() === 0 && now.getMinutes() === 0) {
+                    const today = getTodayDate();
+                    if (lastResetDate !== today) {
+                        console.log("🕛 Midnight detected! Performing daily reset...");
+                        performDailyReset();
+                    }
+                }
+            }, 60000); // Check every minute
+        }
+        
+        // Get next order number (sequential per day)
+        function getNextOrderNumber() {
+            const orderNum = currentOrderNumber;
+            currentOrderNumber++;
+            localStorage.setItem('koojiCurrentOrderNumber', currentOrderNumber);
+            return '#' + orderNum.toString().padStart(3, '0');
+        }
+        
+        // Get yesterday's stats summary (for display)
+        function getYesterdayStats() {
+            const today = getTodayDate();
+            const yesterday = orderHistory.find(h => h.date === today);
+            if (yesterday) return yesterday;
+            
+            // If not found, look for most recent
+            if (orderHistory.length > 0) return orderHistory[orderHistory.length - 1];
+            return null;
+        }
         function saveToLocalStorage() {
             localStorage.setItem('koojiMenuItems', JSON.stringify(menuItems));
             localStorage.setItem('koojiCategories', JSON.stringify(categories));
             localStorage.setItem('koojiStaff', JSON.stringify(staffMembers));
             localStorage.setItem('koojiOrders', JSON.stringify(orders));
             localStorage.setItem('koojiStats', JSON.stringify(dailyStats));
+            localStorage.setItem('koojiLastResetDate', lastResetDate);
+            localStorage.setItem('koojiCurrentOrderNumber', currentOrderNumber);
+            localStorage.setItem('koojiOrderHistory', JSON.stringify(orderHistory));
         }
 
         function loadFromLocalStorage() {
@@ -1013,6 +1170,14 @@
             if (savedOrders) orders = JSON.parse(savedOrders);
             const savedStats = localStorage.getItem('koojiStats');
             if (savedStats) dailyStats = JSON.parse(savedStats);
+            
+            // Load daily reset data
+            const savedResetDate = localStorage.getItem('koojiLastResetDate');
+            if (savedResetDate) lastResetDate = savedResetDate;
+            const savedOrderNumber = localStorage.getItem('koojiCurrentOrderNumber');
+            if (savedOrderNumber) currentOrderNumber = parseInt(savedOrderNumber) || 1;
+            const savedHistory = localStorage.getItem('koojiOrderHistory');
+            if (savedHistory) orderHistory = JSON.parse(savedHistory);
         }
 
         // ========== DARK MODE ==========
@@ -1398,13 +1563,16 @@
             document.getElementById('payment-modal').classList.remove('open');
         }
 
-        function getNextOrderNumber() {
-            return '#' + (Math.floor(Math.random() * 1000)).toString().padStart(3, '0');
+        // In the Daily Reset section, change the function name to:
+        function generateOrderNumber() {
+            const orderNum = currentOrderNumber;
+            currentOrderNumber++;
+            localStorage.setItem('koojiCurrentOrderNumber', currentOrderNumber);
+            return '#' + orderNum.toString().padStart(3, '0');
         }
-
-        function confirmPayment(method) {
+                function confirmPayment(method) {
             const { subtotal, discountAmount, total } = updateTotals();
-            const orderId = getNextOrderNumber();
+                       const orderId = generateOrderNumber();  // ← USE NEW FUNCTION
             const customerName = document.getElementById('customer-name-input').value || 'Guest';
             
             const newOrder = {
@@ -1866,6 +2034,10 @@ function submitLogin() {
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('store-id').innerText = 'KH-' + Math.floor(Math.random() * 10000);
             loadFromLocalStorage();
+            
+            // Check if new day and reset if needed
+            const wasReset = checkAndResetIfNewDay();
+            
             renderCategories();
             renderMenu();
             updateStats();
@@ -1874,9 +2046,24 @@ function submitLogin() {
             initDarkMode();
             initChart();
             nextId = Math.max(...menuItems.map(i => i.id), 0) + 1;
-            showToast('✨ POS Ready | Login with PIN 1234 for Admin control');
+            
+            // Start midnight checker for automatic reset
+            startMidnightChecker();
+            
+            if (!wasReset) {
+                // Show yesterday's stats if available
+                const yesterday = getYesterdayStats();
+                if (yesterday && yesterday.orders > 0) {
+                    setTimeout(() => {
+                        showToast(`📊 Yesterday: ${yesterday.orders} orders, ៛ ${yesterday.revenue.toLocaleString()}`);
+                    }, 2000);
+                } else {
+                    showToast('✨ POS Ready | Order #' + currentOrderNumber.toString().padStart(3, '0') + ' ready');
+                }
+            }
         });
-            // ========== KEYBOARD SHORTCUT ==========
+        
+        // ========== KEYBOARD SHORTCUT ==========
         // Press ESC to go back to POS from any tab
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {

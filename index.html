@@ -727,6 +727,15 @@
             background: var(--primary-soft) !important;
             color: var(--primary) !important;
         }    
+                .cloud-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-elevated);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
     </style>
 </head>
 <body>
@@ -1030,6 +1039,8 @@
         </div>
         <!-- File input for import -->
         <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="processImport(this)">
+                <!-- Supabase SDK -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     </div>
 
     <script>
@@ -1345,7 +1356,174 @@
                 }
             }, 60000); // Check every minute
         }
+                // ========== SUPABASE CLOUD SYNC ==========
+        const SUPABASE_URL = "https://vetldvkdryroeagntnc.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_REdJ2fxwd5SOr7t_hTDTgA_j2zTQfgr";
         
+        let supabaseClient = null;
+        let cloudStatusElement = document.getElementById('cloudStatusText');
+        
+        async function initSupabase() {
+            try {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("✅ Supabase initialized");
+                if (cloudStatusElement) {
+                    cloudStatusElement.innerHTML = '☁️ Online';
+                    cloudStatusElement.style.color = '#2a9d8f';
+                }
+                
+                // Test connection
+                const { data, error } = await supabaseClient.from('orders').select('count', { count: 'exact', head: true });
+                if (error) throw error;
+                console.log("✅ Supabase connected successfully");
+                
+            } catch (error) {
+                console.error("❌ Supabase connection error:", error);
+                if (cloudStatusElement) {
+                    cloudStatusElement.innerHTML = '⚠️ Offline';
+                    cloudStatusElement.style.color = '#e63946';
+                }
+            }
+        }
+        
+        // Sync order to Supabase cloud
+        async function syncOrderToCloud(order) {
+            if (!supabaseClient) {
+                console.log("Supabase not initialized, skipping cloud sync");
+                return;
+            }
+            
+            try {
+                // Prepare items for JSON storage
+                const itemsForStorage = order.items.map(item => ({
+                    name: item.name,
+                    price: item.price,
+                    qty: item.qty,
+                    customization: item.customization || null,
+                    toppings: item.toppingsList || []
+                }));
+                
+                const { data, error } = await supabaseClient
+                    .from('orders')
+                    .insert([{
+                        order_id: order.id,
+                        customer_name: order.customerName,
+                        order_type: order.orderType,
+                        total: order.total,
+                        payment_method: order.paymentMethod,
+                        items: itemsForStorage,
+                        status: order.status,
+                        created_at: new Date().toISOString()
+                    }]);
+                
+                if (error) throw error;
+                console.log("✅ Order synced to cloud:", order.id);
+                
+                // Also update daily stats
+                await updateDailyStatsCloud(order.total);
+                
+            } catch (error) {
+                console.error("❌ Cloud sync failed:", error);
+                // Store failed sync in localStorage for retry
+                const failedSyncs = JSON.parse(localStorage.getItem('kooji_failed_sync') || '[]');
+                failedSyncs.push({ order, timestamp: Date.now() });
+                localStorage.setItem('kooji_failed_sync', JSON.stringify(failedSyncs));
+            }
+        }
+        
+        // Update daily stats in cloud
+        async function updateDailyStatsCloud(amount) {
+            if (!supabaseClient) return;
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            try {
+                // Try to get existing record
+                const { data: existing, error: fetchError } = await supabaseClient
+                    .from('daily_stats')
+                    .select('*')
+                    .eq('date', today)
+                    .maybeSingle();
+                
+                if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+                
+                if (existing) {
+                    // Update existing
+                    const { error: updateError } = await supabaseClient
+                        .from('daily_stats')
+                        .update({
+                            revenue: existing.revenue + amount,
+                            orders_count: existing.orders_count + 1,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('date', today);
+                    
+                    if (updateError) throw updateError;
+                } else {
+                    // Create new
+                    const { error: insertError } = await supabaseClient
+                        .from('daily_stats')
+                        .insert([{
+                            date: today,
+                            revenue: amount,
+                            orders_count: 1,
+                            updated_at: new Date().toISOString()
+                        }]);
+                    
+                    if (insertError) throw insertError;
+                }
+                console.log("✅ Daily stats updated in cloud");
+            } catch (error) {
+                console.error("❌ Failed to update daily stats:", error);
+            }
+        }
+        
+        // Retry failed syncs
+        async function retryFailedSyncs() {
+            const failedSyncs = JSON.parse(localStorage.getItem('kooji_failed_sync') || '[]');
+            if (failedSyncs.length === 0) return;
+            
+            console.log(`🔄 Retrying ${failedSyncs.length} failed syncs...`);
+            
+            for (let i = failedSyncs.length - 1; i >= 0; i--) {
+                const item = failedSyncs[i];
+                await syncOrderToCloud(item.order);
+                failedSyncs.splice(i, 1);
+            }
+            
+            localStorage.setItem('kooji_failed_sync', JSON.stringify(failedSyncs));
+        }
+        
+        // Listen for real-time orders from other devices
+        function setupRealtimeListener() {
+            if (!supabaseClient) return;
+            
+            supabaseClient
+                .channel('pos-realtime')
+                .on('postgres_changes', 
+                    { event: 'INSERT', schema: 'public', table: 'orders' },
+                    (payload) => {
+                        console.log("🔔 Remote order detected!", payload.new);
+                        showToast(`📱 New order from another device: ${payload.new.order_id} - ៛${payload.new.total.toLocaleString()}`);
+                        
+                        // Play sound notification
+                        playNewOrderSound();
+                    }
+                )
+                .subscribe();
+        }
+        
+        // Update the cloud status in header (add this to your header actions)
+        function addCloudStatusToHeader() {
+            const headerActions = document.querySelector('.header-actions');
+            if (headerActions && !document.querySelector('.cloud-status')) {
+                const cloudDiv = document.createElement('div');
+                cloudDiv.className = 'cloud-status';
+                cloudDiv.innerHTML = '<span>☁️</span><span id="cloudStatusText">Connecting...</span>';
+                headerActions.insertBefore(cloudDiv, headerActions.firstChild);
+                cloudStatusElement = document.getElementById('cloudStatusText');
+            }
+        }
         // Test function to verify Telegram connection
         async function testTelegramConnection() {
             if (GROUP_CHAT_ID === "YOUR_GROUP_CHAT_ID_HERE") {
@@ -2085,6 +2263,7 @@ function confirmPayment(method) {
 
     sendOrderToTelegram(newOrder);
     trackDrinkSales(newOrder);
+    syncOrderToCloud(newOrder);
     
     closePaymentModal();
     cart = [];
@@ -2807,7 +2986,12 @@ function startTimerInterval() {
                 }
             };
             // Add this line inside DOMContentLoaded, after startMidnightChecker()
-startTelegramScheduler();
+            startTelegramScheduler();
+            // Initialize Supabase
+            addCloudStatusToHeader();
+            initSupabase();
+            setupRealtimeListener();
+            setTimeout(retryFailedSyncs, 5000);
         });
         
         // ========== KEYBOARD SHORTCUT ==========

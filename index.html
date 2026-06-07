@@ -1692,11 +1692,12 @@
             renderCartSheet();
         }
 
-        function closeCartSheet() {
-            document.getElementById('cartSheet').classList.remove('open');
-            document.getElementById('sheetOverlay').classList.remove('open');
-        }
-
+function closeCartSheet() {
+    document.getElementById('cartSheet').classList.remove('open');
+    document.getElementById('sheetOverlay').classList.remove('open');
+    // Clear customer name when closing cart
+    clearCustomerName();
+}
         function setOrderType(type) {
             currentOrderType = type;
             document.querySelectorAll('.order-type-btn').forEach(btn => {
@@ -2056,38 +2057,51 @@ function confirmDrinkAdd() {
             localStorage.setItem('koojiCurrentOrderNumber', currentOrderNumber);
             return '#' + orderNum.toString().padStart(3, '0');
         }
-        function confirmPayment(method) {
-            const { subtotal, discountAmount, total } = updateTotals();
-                       const orderId = generateOrderNumber();  // ← USE NEW FUNCTION
-            const customerName = document.getElementById('customer-name-input').value || 'Guest';
-            
-            const newOrder = {
-                id: orderId, items: [...cart], subtotal, discountPercent: parseInt(document.getElementById('discount-select')?.value || 0),
-                discountAmount, total, status: 'pending', time: new Date(), orderType: currentOrderType,
-                paymentMethod: method, customerName
-            };
-            
-            orders.push(newOrder);
-            kitchenQueue.push(newOrder);
-            // Play sound notification for new order
-            playNewOrderSound();
-            dailyStats.revenue += total;
-            dailyStats.orders++;
-            updateStats();
-            saveToLocalStorage();
-
-            // ========== ADD THESE TWO LINES ==========
-    sendOrderToTelegram(newOrder);    // Send order to Telegram
-    trackDrinkSales(newOrder);        // Track for daily summary
-            
-            closePaymentModal();
-            cart = [];
-            updateCartBadge();
-            renderCartSheet();
-            closeCartSheet();
-            showToast(`✅ Order ${orderId} placed! Total: ៛ ${total.toLocaleString()}`);
-            setTimeout(() => { switchTab('kitchen'); renderKitchen(); }, 500);
+        function clearCustomerName() {
+            const customerInput = document.getElementById('customer-name-input');
+            if (customerInput) {
+                customerInput.value = '';
+                customerInput.placeholder = 'Customer name';
+            }
         }
+function confirmPayment(method) {
+    const { subtotal, discountAmount, total } = updateTotals();
+    const orderId = generateOrderNumber();
+    const customerName = document.getElementById('customer-name-input').value || 'Guest';
+    
+    const newOrder = {
+        id: orderId, items: [...cart], subtotal, discountPercent: parseInt(document.getElementById('discount-select')?.value || 0),
+        discountAmount, total, status: 'pending', time: new Date(), orderType: currentOrderType,
+        paymentMethod: method, customerName
+    };
+    
+    orders.push(newOrder);
+    kitchenQueue.push(newOrder);
+    playNewOrderSound();
+    dailyStats.revenue += total;
+    dailyStats.orders++;
+    updateStats();
+    saveToLocalStorage();
+
+    sendOrderToTelegram(newOrder);
+    trackDrinkSales(newOrder);
+    
+    closePaymentModal();
+    cart = [];
+    updateCartBadge();
+    renderCartSheet();
+    closeCartSheet();
+    
+    // ✅ CLEAR CUSTOMER NAME AFTER SALE
+    clearCustomerName();
+    
+    // Reset discount to default "None"
+    const discountSelect = document.getElementById('discount-select');
+    if (discountSelect) discountSelect.value = '0';
+    
+    showToast(`✅ Order ${orderId} placed! Total: ៛ ${total.toLocaleString()}`);
+    setTimeout(() => { switchTab('kitchen'); renderKitchen(); }, 500);
+}
 
         // ========== MENU RENDERING ==========
         function renderCategories() {

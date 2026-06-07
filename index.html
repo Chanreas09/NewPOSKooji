@@ -993,18 +993,6 @@
                     <p style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 6px;">Choose your sweetness level</p>
                 </div>
                 
-                <!-- ICE LEVEL - MANDATORY -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-weight: 600;">🧊 Ice Level</span>
-                            <span style="color: var(--danger); font-size: 0.7rem; background: var(--danger-soft); padding: 2px 8px; border-radius: 20px;">*Required</span>
-                        </div>
-                        <span id="ice-status" style="color: var(--danger); font-size: 0.7rem;">Not selected</span>
-                    </div>
-                    <div id="ice-options" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
-                    <p style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 6px;">Choose how much ice you prefer</p>
-                </div>
                 
                 <!-- TOPPINGS - OPTIONAL -->
                 <div style="margin-bottom: 20px;">
@@ -1038,9 +1026,6 @@
                     <button id="add-to-order-btn" onclick="confirmDrinkAdd()" class="pay-btn" style="background: var(--primary); opacity: 0.5; cursor: not-allowed;" disabled>✅ Add to Order</button>
                 </div>
                 
-                <div id="validation-message" style="display: none; text-align: center; margin-top: 12px; color: var(--danger); font-size: 0.75rem;">
-                    ⚠️ Please select Sugar Level and Ice Level before adding to order
-                </div>
             </div>
         </div>
         <!-- File input for import -->
@@ -1720,56 +1705,52 @@
             });
         }
 
-        function addToCart(item, skipCustomize = false) {
-            // For Food items or when skipCustomize is true, add directly
-            if (item.category === '🍔 Food' || skipCustomize) {
-                const existing = cart.find(i => i.id === item.id && !i.customized);
-                if (existing) existing.qty++;
-                else cart.push({ ...item, qty: 1, customized: false });
-                updateCartBadge();
-                renderCartSheet();
-                showToast(`Added ${item.name} to cart 🧋`);
-                return;
-            }
-            
-            // For drinks, open customization modal
-            tempCartItem = {
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                emoji: item.emoji,
-                category: item.category,
-                sugar: null,
-                ice: null,
-                toppings: [],
-                basePrice: item.price
-            };
-            
-            // Reset modal state
-            isSugarSelected = false;
-            isIceSelected = false;
-            
-            document.getElementById('modal-item-name').innerHTML = `${item.emoji || '🧋'} ${item.name}`;
-            document.getElementById('modal-base-price').innerHTML = `៛ ${item.price.toLocaleString()}`;
-            document.getElementById('modal-total-price').innerHTML = `៛ ${item.price.toLocaleString()}`;
-            document.getElementById('toppings-total-row').style.display = 'none';
-            document.getElementById('validation-message').style.display = 'none';
-            
-            // Disable add button initially
-            const addBtn = document.getElementById('add-to-order-btn');
-            addBtn.disabled = true;
-            addBtn.style.opacity = '0.5';
-            addBtn.style.cursor = 'not-allowed';
-            
-            // Reset status indicators
-            document.getElementById('sugar-status').innerHTML = 'Not selected';
-            document.getElementById('sugar-status').style.color = 'var(--danger)';
-            document.getElementById('ice-status').innerHTML = 'Not selected';
-            document.getElementById('ice-status').style.color = 'var(--danger)';
-            
-            renderDrinkOptions();
-            document.getElementById('drink-modal').classList.add('open');
-        }
+function addToCart(item, skipCustomize = false) {
+    // For Food items or when skipCustomize is true, add directly
+    if (item.category === '🍔 Food' || skipCustomize) {
+        const existing = cart.find(i => i.id === item.id && !i.customized);
+        if (existing) existing.qty++;
+        else cart.push({ ...item, qty: 1, customized: false });
+        updateCartBadge();
+        renderCartSheet();
+        showToast(`Added ${item.name} to cart 🧋`);
+        return;
+    }
+    
+    // For drinks, open customization modal
+    tempCartItem = {
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        emoji: item.emoji,
+        category: item.category,
+        sugar: '75%',  // Default sugar
+        toppings: [],
+        basePrice: item.price
+    };
+    
+    // Reset modal state
+    isSugarSelected = true;  // Default selected
+    
+    document.getElementById('modal-item-name').innerHTML = `${item.emoji || '🧋'} ${item.name}`;
+    document.getElementById('modal-base-price').innerHTML = `៛ ${item.price.toLocaleString()}`;
+    document.getElementById('modal-total-price').innerHTML = `៛ ${item.price.toLocaleString()}`;
+    document.getElementById('toppings-total-row').style.display = 'none';
+    
+    
+    // Enable add button (sugar has default)
+    const addBtn = document.getElementById('add-to-order-btn');
+    addBtn.disabled = false;
+    addBtn.style.opacity = '1';
+    addBtn.style.cursor = 'pointer';
+    
+    // Set sugar status
+    document.getElementById('sugar-status').innerHTML = 'Selected: 75% (Default)';
+    document.getElementById('sugar-status').style.color = 'var(--success)';
+    
+    renderDrinkOptions();
+    document.getElementById('drink-modal').classList.add('open');
+}
         function updateCartBadge() {
             const total = cart.reduce((sum, i) => sum + i.qty, 0);
             document.getElementById('cartItemCount').innerText = total;
@@ -1797,16 +1778,23 @@
             document.getElementById('cart-total').innerHTML = `៛ ${total.toLocaleString()}`;
             return { subtotal, discountAmount, total };
         }
-                // ========== DRINK CUSTOMIZATION FUNCTIONS ==========
+        // ========== DRINK CUSTOMIZATION FUNCTIONS ==========
         let tempCartItem = null;
         let isSugarSelected = false;
-        let isIceSelected = false;
 
         function renderDrinkOptions() {
-            // Sugar Options
-            const sugars = ['0%', '10%', '25%', '50%', '75%', '100%', '120%'];
+            // Sugar Options - 75% as default
+            const sugars = ['0%', '25%', '50%', '75%', '100%'];
             const sugarContainer = document.getElementById('sugar-options');
             sugarContainer.innerHTML = '';
+            
+            // Set default sugar to 75%
+            if (!tempCartItem.sugar) {
+                tempCartItem.sugar = '75%';
+                isSugarSelected = true;
+                document.getElementById('sugar-status').innerHTML = 'Selected: 75% (Default)';
+                document.getElementById('sugar-status').style.color = 'var(--success)';
+            }
             
             sugars.forEach(s => {
                 const btn = document.createElement('button');
@@ -1832,80 +1820,88 @@
                 sugarContainer.appendChild(btn);
             });
             
-            // Ice Options
-            const ices = ['No Ice', 'Less Ice', 'Normal', 'Extra Ice'];
-            const iceContainer = document.getElementById('ice-options');
-            iceContainer.innerHTML = '';
-            
-            ices.forEach(i => {
-                const btn = document.createElement('button');
-                btn.innerText = i;
-                btn.style.cssText = `
-                    padding: 10px;
-                    border-radius: 12px;
-                    font-size: 0.875rem;
-                    border: 1px solid var(--border-light);
-                    background: ${tempCartItem.ice === i ? 'var(--primary)' : 'var(--bg-elevated)'};
-                    color: ${tempCartItem.ice === i ? 'white' : 'var(--text-primary)'};
-                    cursor: pointer;
-                    transition: all 0.15s;
-                `;
-                btn.onclick = () => {
-                    tempCartItem.ice = i;
-                    isIceSelected = true;
-                    document.getElementById('ice-status').innerHTML = `Selected: ${i}`;
-                    document.getElementById('ice-status').style.color = 'var(--success)';
-                    renderDrinkOptions();
-                    checkFormCompletion();
-                };
-                iceContainer.appendChild(btn);
-            });
-            
-            // Toppings
+            // TOPPINGS - DROPDOWN FOR COMPACT LAYOUT
             const toppingContainer = document.getElementById('topping-options');
             toppingContainer.innerHTML = '';
             document.getElementById('topping-count-badge').innerHTML = `${tempCartItem.toppings.length}/3 selected`;
             
+            // Show selected toppings summary
+            const selectedDiv = document.createElement('div');
+            selectedDiv.style.cssText = 'margin-bottom: 10px; padding: 8px; background: var(--bg-elevated); border-radius: 8px; font-size: 0.75rem;';
+            selectedDiv.innerHTML = `<strong>✓ Selected:</strong> ${tempCartItem.toppings.length === 0 ? 'None' : tempCartItem.toppings.map(t => `${t.name} x${t.qty || 1}`).join(', ')}`;
+            toppingContainer.appendChild(selectedDiv);
+            
+            // Dropdown for adding toppings
+            const dropdown = document.createElement('select');
+            dropdown.style.cssText = `
+                width: 100%;
+                padding: 10px;
+                border-radius: 12px;
+                border: 1px solid var(--border-light);
+                background: var(--bg-elevated);
+                color: var(--text-primary);
+                font-size: 0.875rem;
+                margin-bottom: 10px;
+                cursor: pointer;
+            `;
+            
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '➕ Add topping...';
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            dropdown.appendChild(defaultOption);
+            
             toppingsList.forEach(t => {
-                const existingTopping = tempCartItem.toppings.find(tp => tp.id === t.id);
-                const isSelected = !!existingTopping;
-                
-                const div = document.createElement('div');
-                div.style.cssText = `
-                    padding: 10px;
-                    border-radius: 12px;
-                    border: 1px solid var(--border-light);
-                    background: ${isSelected ? '#d8f3dc' : 'var(--bg-elevated)'};
-                    cursor: pointer;
-                `;
-                
+                const isSelected = tempCartItem.toppings.find(tp => tp.id === t.id);
                 if (!isSelected) {
-                    div.onclick = () => addToppingToDrink(t.id);
+                    const option = document.createElement('option');
+                    option.value = t.id;
+                    option.textContent = `${t.name} (+៛${t.price.toLocaleString()})`;
+                    dropdown.appendChild(option);
                 }
-                
-                div.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--primary); background: ${isSelected ? 'var(--primary)' : 'transparent'}; display: flex; align-items: center; justify-content: center;">
-                                ${isSelected ? '<span style="color: white; font-size: 12px;">✓</span>' : ''}
-                            </div>
-                            <div>
-                                <span style="font-weight: 500;">${t.name}</span>
-                                <span style="font-size: 0.7rem; color: var(--text-tertiary);"> +៛${t.price}</span>
-                            </div>
-                        </div>
-                        ${isSelected ? `
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <button onclick="event.stopPropagation(); updateToppingQty('${t.id}', -1)" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border-light); background: var(--bg-elevated); cursor: pointer;">−</button>
-                                <span style="min-width: 24px; text-align: center;">${existingTopping?.qty || 1}</span>
-                                <button onclick="event.stopPropagation(); updateToppingQty('${t.id}', 1)" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border-light); background: var(--bg-elevated); cursor: pointer;">+</button>
-                                <button onclick="event.stopPropagation(); removeToppingFromDrink('${t.id}')" style="background: none; border: none; color: var(--danger); cursor: pointer;">✕</button>
-                            </div>
-                        ` : '<button style="padding: 6px 14px; border-radius: 20px; background: var(--primary); color: white; border: none; font-size: 0.7rem; cursor: pointer;">+ Add</button>'}
-                    </div>
-                `;
-                toppingContainer.appendChild(div);
             });
+            
+            dropdown.onchange = (e) => {
+                if (e.target.value) {
+                    addToppingToDrink(e.target.value);
+                    dropdown.value = '';
+                }
+            };
+            toppingContainer.appendChild(dropdown);
+            
+            // Show existing toppings with quantity controls
+            if (tempCartItem.toppings.length > 0) {
+                const existingDiv = document.createElement('div');
+                existingDiv.style.cssText = 'margin-top: 8px;';
+                existingDiv.innerHTML = '<div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 6px;">📦 Adjust toppings:</div>';
+                
+                tempCartItem.toppings.forEach(t => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.style.cssText = `
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 8px 0;
+                        border-bottom: 1px solid var(--border-light);
+                        font-size: 0.75rem;
+                    `;
+                    itemDiv.innerHTML = `
+                        <span>${t.name}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button onclick="updateToppingQty('${t.id}', -1)" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border-light); background: var(--bg-elevated); cursor: pointer;">−</button>
+                            <span style="min-width: 24px; text-align: center;">${t.qty || 1}</span>
+                            <button onclick="updateToppingQty('${t.id}', 1)" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border-light); background: var(--bg-elevated); cursor: pointer;">+</button>
+                            <button onclick="removeToppingFromDrink('${t.id}')" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px;">🗑️</button>
+                        </div>
+                        <span style="color: var(--primary);">+៛${(t.price * (t.qty || 1)).toLocaleString()}</span>
+                    `;
+                    existingDiv.appendChild(itemDiv);
+                });
+                toppingContainer.appendChild(existingDiv);
+            }
+            
+            updateTotalPrice();
         }
         
         function addToppingToDrink(toppingId) {
@@ -1964,59 +1960,54 @@
             }
         }
         
-        function checkFormCompletion() {
-            const addBtn = document.getElementById('add-to-order-btn');
-            const validationMsg = document.getElementById('validation-message');
-            
-            if (isSugarSelected && isIceSelected) {
-                addBtn.disabled = false;
-                addBtn.style.opacity = '1';
-                addBtn.style.cursor = 'pointer';
-                validationMsg.style.display = 'none';
-            } else {
-                addBtn.disabled = true;
-                addBtn.style.opacity = '0.5';
-                addBtn.style.cursor = 'not-allowed';
-                validationMsg.style.display = 'block';
-            }
-        }
-        
-        function confirmDrinkAdd() {
-            if (!isSugarSelected || !isIceSelected) {
-                document.getElementById('validation-message').style.display = 'block';
-                return;
-            }
-            
-            // Create a display string for customization
-            const customizationNote = `${tempCartItem.sugar} Sugar, ${tempCartItem.ice} Ice` + 
-                (tempCartItem.toppings.length > 0 ? ` + ${tempCartItem.toppings.map(t => t.name).join(', ')}` : '');
-            
-            // Add to cart with customization info
-            const existing = cart.find(i => i.id === tempCartItem.id && i.customization === customizationNote);
-            if (existing) {
-                existing.qty++;
-            } else {
-                cart.push({
-                    ...tempCartItem,
-                    qty: 1,
-                    customized: true,
-                    customization: customizationNote,
-                    displayName: `${tempCartItem.emoji || '🧋'} ${tempCartItem.name}`,
-                    toppingsList: tempCartItem.toppings
-                });
-            }
-            
-            updateCartBadge();
-            renderCartSheet();
-            showToast(`✅ Added ${tempCartItem.name} with ${customizationNote}`);
-            closeDrinkModal();
-        }
-        
+function checkFormCompletion() {
+    const addBtn = document.getElementById('add-to-order-btn');
+    
+    // Only sugar required (ice removed)
+    if (isSugarSelected) {
+        addBtn.disabled = false;
+        addBtn.style.opacity = '1';
+        addBtn.style.cursor = 'pointer';
+    } else {
+        addBtn.disabled = true;
+        addBtn.style.opacity = '0.5';
+        addBtn.style.cursor = 'not-allowed';
+    }
+}        
+function confirmDrinkAdd() {
+    if (!isSugarSelected) {
+        showToast("⚠️ Please select Sugar Level");
+        return;
+    }
+    
+    // Create display string (ice removed)
+    const customizationNote = `${tempCartItem.sugar} Sugar` + 
+        (tempCartItem.toppings.length > 0 ? ` + ${tempCartItem.toppings.map(t => `${t.name} x${t.qty || 1}`).join(', ')}` : '');
+    
+    // Add to cart
+    const existing = cart.find(i => i.id === tempCartItem.id && i.customization === customizationNote);
+    if (existing) {
+        existing.qty++;
+    } else {
+        cart.push({
+            ...tempCartItem,
+            qty: 1,
+            customized: true,
+            customization: customizationNote,
+            displayName: `${tempCartItem.emoji || '🧋'} ${tempCartItem.name}`,
+            toppingsList: tempCartItem.toppings
+        });
+    }
+    
+    updateCartBadge();
+    renderCartSheet();
+    showToast(`✅ Added ${tempCartItem.name} (${customizationNote})`);
+    closeDrinkModal();
+}        
         function closeDrinkModal() {
             document.getElementById('drink-modal').classList.remove('open');
             tempCartItem = null;
             isSugarSelected = false;
-            isIceSelected = false;
         }
         function renderCartSheet() {
             const container = document.getElementById('cart-items-list');
@@ -2520,52 +2511,58 @@ function deleteItem(id) {
             }
         }
         
-        // Update wait timers for all orders
-        function updateOrderTimers() {
-            const now = new Date();
-            document.querySelectorAll('.kitchen-order-card').forEach(card => {
-                const orderIdAttr = card.getAttribute('data-order-id');
-                if (orderIdAttr) {
-                    const orderTime = parseInt(card.getAttribute('data-order-time'));
-                    if (orderTime) {
-                        const waitMinutes = Math.floor((now.getTime() - orderTime) / 60000);
-                        const timerSpan = card.querySelector('.wait-time');
-                        if (timerSpan) {
-                            if (waitMinutes < 1) {
-                                timerSpan.innerText = 'Just now';
-                                timerSpan.style.color = '#2d6a4f';
-                            } else if (waitMinutes < 5) {
-                                timerSpan.innerText = `${waitMinutes} min`;
-                                timerSpan.style.color = '#e76f51';
-                            } else if (waitMinutes < 10) {
-                                timerSpan.innerText = `${waitMinutes} min`;
-                                timerSpan.style.color = '#e63946';
-                                timerSpan.style.fontWeight = 'bold';
-                            } else {
-                                timerSpan.innerText = `${waitMinutes}+ min`;
-                                timerSpan.style.color = '#e63946';
-                                timerSpan.style.fontWeight = 'bold';
-                                timerSpan.style.animation = 'pulse 1s infinite';
-                            }
-                        }
-                    }
+// Update wait timers for all orders with real elapsed time
+function updateOrderTimers() {
+    const now = new Date();
+    document.querySelectorAll('.kitchen-order-card').forEach(card => {
+        const orderTime = parseInt(card.getAttribute('data-order-time'));
+        if (orderTime) {
+            const elapsedMs = now.getTime() - orderTime;
+            const elapsedSeconds = Math.floor(elapsedMs / 1000);
+            const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+            const remainingSeconds = elapsedSeconds % 60;
+            
+            const timerSpan = card.querySelector('.wait-time');
+            if (timerSpan) {
+                // Format as MM:SS
+                const formattedTime = `${elapsedMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+                timerSpan.innerText = formattedTime;
+                
+                // Color coding based on wait time
+                if (elapsedMinutes < 2) {
+                    timerSpan.style.color = '#2d6a4f';  // Green - just started
+                    timerSpan.style.fontWeight = 'normal';
+                    timerSpan.style.animation = 'none';
+                } else if (elapsedMinutes < 5) {
+                    timerSpan.style.color = '#e76f51';  // Orange - getting warm
+                    timerSpan.style.fontWeight = '500';
+                    timerSpan.style.animation = 'none';
+                } else if (elapsedMinutes < 10) {
+                    timerSpan.style.color = '#e63946';  // Red - taking long
+                    timerSpan.style.fontWeight = 'bold';
+                    timerSpan.style.animation = 'none';
+                } else {
+                    timerSpan.style.color = '#e63946';  // Red - critical
+                    timerSpan.style.fontWeight = 'bold';
+                    timerSpan.style.animation = 'pulse 1s infinite';
                 }
-            });
+            }
         }
+    });
+}
         
-        // Start timer interval that updates every minute
-        let timerInterval = null;
-        function startTimerInterval() {
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                // Only update if kitchen view is visible
-                const kitchenView = document.getElementById('view-kitchen');
-                if (kitchenView && !kitchenView.classList.contains('hidden')) {
-                    updateOrderTimers();
-                }
-            }, 60000); // Update every minute
+// Start timer interval that updates every second for real-time display
+let timerInterval = null;
+function startTimerInterval() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        // Only update if kitchen view is visible
+        const kitchenView = document.getElementById('view-kitchen');
+        if (kitchenView && !kitchenView.classList.contains('hidden')) {
+            updateOrderTimers();
         }
-
+    }, 1000); // Update every second for real-time counter
+}
         function updateOrderStatus(id, newStatus) {
             const order = kitchenQueue.find(o => o.id === id);
             if (order) {
